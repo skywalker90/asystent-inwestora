@@ -1,7 +1,7 @@
 package com.agsupport.core.jpa.facade;
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
@@ -30,32 +30,53 @@ public class StockIndexFacade {
 	private EntityManager em;
 
 	/**
-	 * Sprawdzenie czy dany indeks nie jest już zapisany dla danej giełdy.
+	 * Pobranie wszytskich wartosci indeksu danej giełdy
 	 * 
-	 * @param time
-	 *            czas zapisany w formacie hh:mm, pobrany z pierwszej kolumny
-	 * @param d
-	 *            data aktualizacji strony
 	 * @param stockMarketId
-	 *            id giełdy
+	 *            id danej giełdy
 	 * @return
 	 */
-	public boolean stockIndexExists(String time, Date d, long stockMarketId) {
+	public List<StockIndex> getAllStockIndex(long stockMarketId) {
 		try {
 			TypedQuery<StockIndex> query = em
 					.createQuery(
-							"SELECT si FROM StockIndex si WHERE si.timeOfLastUpdate=:time AND si.dateOfPageUpdate = :dateOfPageUpdate AND si.stockMarket.id = :stockMarketId",
+							"SELECT s FROM StockIndex s WHERE s.stockMarket.id = :stockMarketId ORDER BY d.dateOfAdd DESC",
 							StockIndex.class);
-			query.setParameter("time", time)
-					.setParameter("stockMarketId", stockMarketId)
-					.setParameter("dateOfPageUpdate", d, TemporalType.TIMESTAMP);
-			if (query.getResultList().isEmpty()) {
-				return false;
-			}
-			return true;
+			query.setParameter("stockMarketId", stockMarketId);
+			return query.getResultList();
 		} catch (Exception e) {
-			logger.error("StockIndexFacade.stockIndexExists", e);
-			return false;
+			logger.error("getAllStockIndex.Excpetion", e);
+			return null;
+		}
+	}
+
+	/**
+	 * Pobranie wartosci indeksu danej giełdy z pewnego zakresu
+	 * 
+	 * @param stockMarketId
+	 *            id danej giełdy
+	 * @param from
+	 *            początek zakresu
+	 * @param to
+	 *            koniec zakresu
+	 * @return
+	 */
+	public List<StockIndex> getStockIndexForRange(long stockMarketId,
+			Date from, Date to) {
+		try {
+			TypedQuery<StockIndex> query = em
+					.createQuery(
+							"SELECT s FROM StockIndex s WHERE s.stockMarket.id = :stockMarketId "
+									+ "AND s.dateOfAdd >= :from "
+									+ "AND s.dateOfAdd <= :to ORDER BY d.dateOfAdd DESC",
+							StockIndex.class);
+			query.setParameter("stockMarketId", stockMarketId)
+					.setParameter("from", from, TemporalType.TIMESTAMP)
+					.setParameter("to", to, TemporalType.TIMESTAMP);
+			return query.getResultList();
+		} catch (Exception e) {
+			logger.error("getAllStockIndex.Excpetion", e);
+			return null;
 		}
 	}
 

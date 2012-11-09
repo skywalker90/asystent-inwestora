@@ -2,31 +2,36 @@ package com.agsupport.core.jpa.model;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 /**
- * Klasa modelu reprezentująca indeks danej giełdy.
+ * Klasa modelu reprezentująca wartość instrumentu pochodnego.
  * 
  * @author Michał Gruszczyński
  * 
  */
 
 @Entity
-@Table(name = "stock_index")
-public class StockIndex implements Serializable {
+@Table(name = "derivative_value")
+public class DerivativeValue implements Serializable {
 
 	@Id
 	@GeneratedValue
-	@Column(name = "stock_index_id")
+	@Column(name = "derivative_value_id")
 	private Long id;
 
 	@Column(columnDefinition = "Decimal(15,2)")
@@ -36,11 +41,15 @@ public class StockIndex implements Serializable {
 	@Column(name = "date_of_add", nullable = false)
 	private Date dateOfAdd;
 
-	@ManyToOne(optional = false)
-	@JoinColumn(name = "stock_market_id")
-	private StockMarket stockMarket;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name = "expired_date", nullable = false)
+	private Date expiredDate;
 
-	public StockIndex() {
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "derivative_id")
+	private Derivative derivative;
+
+	public DerivativeValue() {
 	}
 
 	public Long getId() {
@@ -67,12 +76,20 @@ public class StockIndex implements Serializable {
 		this.dateOfAdd = dateOfAdd;
 	}
 
-	public StockMarket getStockMarket() {
-		return stockMarket;
+	public Derivative getDerivative() {
+		return derivative;
 	}
 
-	public void setStockMarket(StockMarket stockMarket) {
-		this.stockMarket = stockMarket;
+	public void setDerivative(Derivative derivative) {
+		this.derivative = derivative;
+	}
+
+	public Date getExpiredDate() {
+		return expiredDate;
+	}
+
+	public void setExpiredDate(Date expiredDate) {
+		this.expiredDate = expiredDate;
 	}
 
 }

@@ -6,11 +6,12 @@ import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 
 import org.jboss.logging.Logger;
 
-import com.agsupport.core.jpa.model.Company;
+import com.agsupport.core.jpa.model.DerivativeValue;
 import com.agsupport.core.jpa.model.StockIndex;
 import com.agsupport.core.jpa.model.StockMarket;
 
@@ -46,56 +47,6 @@ public class StockMartekFacade {
 			return false;
 		}
 		return true;
-	}
-
-	public List<StockMarket> getStockMarketList() {
-		try {
-			TypedQuery<StockMarket> query = em.createQuery("from StockMarket",
-					StockMarket.class);
-			return query.getResultList();
-		} catch (Exception e) {
-			logger.error("getStockMarketList.Excpetion", e);
-			return null;
-		}
-
-	}
-
-	/**
-	 * Pobieranie giełdy na podstawie id
-	 * 
-	 * @param stockMarketId
-	 *            id giełdy
-	 * @return
-	 */
-	public StockMarket getStockMarketById(long stockMarketId) {
-		try {
-			StockMarket stockMarket = em.find(StockMarket.class, stockMarketId);
-			return stockMarket;
-		} catch (Exception e) {
-			logger.error("getStockMarketById.Excpetion", e);
-			return null;
-		}
-	}
-
-	/**
-	 * Pobieranie giełdy na podstawie skróconej nazwy
-	 * 
-	 * @param abberviatedName
-	 *            skrócona nazwa
-	 * @return
-	 */
-	public StockMarket getStockMarketByAbbreviatedName(String abberviatedName) {
-		try {
-			TypedQuery<StockMarket> query = em.createQuery(
-					"from StockMarket s where s.abbreviatedName =:name",
-					StockMarket.class);
-			query.setParameter("name", abberviatedName);
-			StockMarket stockMarket = query.getSingleResult();
-			return stockMarket;
-		} catch (Exception e) {
-			logger.error("getStockMarketByAbbreviatedName.Excpetion", e);
-			return null;
-		}
 	}
 
 	/**
@@ -135,49 +86,65 @@ public class StockMartekFacade {
 	}
 
 	/**
-	 * Dodanie spółki do danej giełdy
+	 * Pobieranie listy giełd
+	 * 
+	 * @return
+	 */
+	public List<StockMarket> getStockMarketList() {
+		try {
+			TypedQuery<StockMarket> query = em.createQuery(
+					"SELECT s from StockMarket s", StockMarket.class);
+			return query.getResultList();
+		} catch (Exception e) {
+			logger.error("getStockMarketList.Excpetion", e);
+			return null;
+		}
+
+	}
+
+	/**
+	 * Pobieranie giełdy na podstawie id
 	 * 
 	 * @param stockMarketId
-	 *            id giełdy do której dodawana jest spółka
-	 * @param company
-	 *            spółka
+	 *            id giełdy
 	 * @return
 	 */
-	public boolean addCompany(long stockMarketId, Company company) {
+	public StockMarket getStockMarketById(long stockMarketId) {
 		try {
 			StockMarket stockMarket = em.find(StockMarket.class, stockMarketId);
-			company.setStockMarket(stockMarket);
-			company.setDateOfAdd(new Date());
-			em.persist(company);
+			return stockMarket;
 		} catch (Exception e) {
-			logger.error("addCompany.Excpetion", e);
-			return false;
+			logger.error("getStockMarketById.Excpetion", e);
+			return null;
 		}
-		return true;
 	}
 
 	/**
-	 * Usunięcie danej spółki
+	 * Pobieranie giełdy na podstawie skróconej nazwy
 	 * 
-	 * @param comapnyId
-	 *            id usuwanej spółki
+	 * @param abberviatedName
+	 *            skrócona nazwa
 	 * @return
 	 */
-	public boolean deleteCompany(long comapnyId) {
+	public StockMarket getStockMarketByAbbreviatedName(String abberviatedName) {
 		try {
-			Company company = em.find(Company.class, comapnyId);
-			StockMarket stockMarket = company.getStockMarket();
-			stockMarket.getCompanies().remove(company);
-			em.remove(company);
+			TypedQuery<StockMarket> query = em
+					.createQuery(
+							"SELECT s from StockMarket s where s.abbreviatedName =:abberviatedName",
+							StockMarket.class);
+			query.setParameter("abberviatedName", abberviatedName);
+			StockMarket stockMarket = query.getSingleResult();
+			return stockMarket;
 		} catch (Exception e) {
-			logger.error("deleteCompany.Excpetion", e);
-			return false;
+			logger.error("getStockMarketByAbbreviatedName.Excpetion", e);
+			return null;
 		}
-		return true;
 	}
 
 	/**
-	 * Dodanie wartości indeksu giełdowego do danej giełdy
+	 * Dodanie wartości indeksu giełdowego do danej giełdy tylko i wyłącznie gdy
+	 * wartości bezpośrednio sąsiadujących wartości indeksu w kontekście daty są
+	 * różne.
 	 * 
 	 * @param stockMarketId
 	 *            id giełdy
@@ -187,9 +154,28 @@ public class StockMartekFacade {
 	 */
 	public boolean addStockIndex(long stockMarketId, StockIndex stockIndex) {
 		try {
+			TypedQuery<StockIndex> query = em
+					.createQuery(
+							"SELECT s FROM StockIndex s WHERE s.stockMarket.id = :stockMarketId ORDER BY d.dateOfAdd DESC",
+							StockIndex.class);
+			query.setParameter("stockMarketId", stockMarketId).setMaxResults(1);
+			List<StockIndex> list = query.getResultList();
+
+			/*
+			 * Nie dodaje do bazy wartości indeksów dotyczących tej samej giełdy
+			 * i takich których daty dodania do bazy bezpośrednio następnują po
+			 * sobie a ich ceny nie zmieniają się .
+			 */
+			if (list != null && list.isEmpty() == false) {
+				StockIndex stockIndexFirstResult = list.get(0);
+				if (stockIndexFirstResult.getPrice().equals(
+						stockIndex.getPrice())) {
+					return false;
+				}
+			}
+
 			StockMarket stockMarket = em.find(StockMarket.class, stockMarketId);
 			stockIndex.setStockMarket(stockMarket);
-			stockIndex.setDateOfAdd(new Date());
 			em.persist(stockIndex);
 		} catch (Exception e) {
 			logger.error("addStockIndex.Excpetion", e);

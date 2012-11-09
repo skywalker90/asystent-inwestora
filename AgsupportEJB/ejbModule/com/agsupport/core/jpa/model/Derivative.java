@@ -17,26 +17,23 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 /**
- * Klasa modelu reprezentująca giełdę.
+ * Klasa modelu reprezentująca instrument pochodny giełdy.
  * 
  * @author Michał Gruszczyński
  * 
  */
 
 @Entity
-@Table(name = "stock_market")
-public class StockMarket implements Serializable {
+@Table(name = "derivative")
+public class Derivative implements Serializable {
 
 	@Id
 	@GeneratedValue
-	@Column(name = "stock_market_id")
+	@Column(name = "derivative_id")
 	private Long id;
 
+	@Column(nullable = false, unique = true)
 	private String name;
-
-	// SYMBOL
-	@Column(name = "abbreviated_name", nullable = false, unique = true)
-	private String abbreviatedName;
 
 	@Lob
 	@Column(columnDefinition = "TEXT")
@@ -46,10 +43,10 @@ public class StockMarket implements Serializable {
 	@Column(name = "data_of_add", nullable = false)
 	private Date dateOfAdd;
 
-	@OneToMany(mappedBy = "stockMarket", cascade = CascadeType.ALL)
-	private List<StockIndex> stockIndexes = new LinkedList<StockIndex>();
+	@OneToMany(mappedBy = "derivative", cascade = CascadeType.ALL)
+	private List<DerivativeValue> derivativeValues = new LinkedList<DerivativeValue>();
 
-	public StockMarket() {
+	public Derivative() {
 	}
 
 	public Long getId() {
@@ -68,14 +65,6 @@ public class StockMarket implements Serializable {
 		this.name = name;
 	}
 
-	public String getAbbreviatedName() {
-		return abbreviatedName;
-	}
-
-	public void setAbbreviatedName(String abbreviatedName) {
-		this.abbreviatedName = abbreviatedName;
-	}
-
 	public String getDescription() {
 		return description;
 	}
@@ -92,12 +81,12 @@ public class StockMarket implements Serializable {
 		this.dateOfAdd = dateOfAdd;
 	}
 
-	public List<StockIndex> getStockIndexes() {
-		return stockIndexes;
+	public List<DerivativeValue> getDerivativeValues() {
+		return derivativeValues;
 	}
 
-	public void setStockIndexes(List<StockIndex> stockIndexes) {
-		this.stockIndexes = stockIndexes;
+	public void setDerivativeValues(List<DerivativeValue> derivativeValues) {
+		this.derivativeValues = derivativeValues;
 	}
 
 }

@@ -1,11 +1,9 @@
 package com.agsupport.core.service.collection;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.SocketTimeoutException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -14,23 +12,19 @@ import javax.ejb.Stateless;
 import javax.ejb.Timeout;
 
 import org.jboss.logging.Logger;
-import org.jsoup.Connection;
-import org.jsoup.HttpStatusException;
-import org.jsoup.Jsoup;
-import org.jsoup.UnsupportedMimeTypeException;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 import com.agsupport.core.jpa.facade.StockIndexFacade;
 import com.agsupport.core.jpa.facade.StockMartekFacade;
 import com.agsupport.core.jpa.model.StockIndex;
 import com.agsupport.core.jpa.model.StockMarket;
+import com.agsupport.parser.index.IndexParser;
 
 /**
- * Klasa odpowiedzialna za systematyczne pobieranie indeksów dla światowych giełd.
+ * Klasa odpowiedzialna za systematyczne pobieranie wartosci indeksów dla
+ * światowych giełd.
+ * 
  * @author Michał Gruszczyński
- *
+ * 
  */
 
 @Stateless
@@ -38,136 +32,109 @@ public class StockIndexCollector {
 
 	private Logger logger = Logger.getLogger(StockIndexCollector.class);
 
-	private static long a = 0;
-
 	@EJB
 	private StockMartekFacade stockMarketFacade;
 	@EJB
-	private StockIndexFacade stockindexFacade;
-
-	private List<StockMarket> stockMarkets = null;
+	private StockIndexFacade stockIndexFacade;
 
 	@PostConstruct
 	public void init() {
 		logger.info("StockIndexCollector.init START");
 	}
 
-	@Schedule(persistent = false, second = "0", minute = "*/1", hour = "*")
+	/**
+	 * Metoda Timer Service. Wywoływana co 30 minut. Sekwencyjnie
+	 * wywołuje parsery różnych stron z których pobierane są dane na temat giełd
+	 * oraz wartości indeksów.
+	 * 
+	 */
+	@Schedule(persistent = false, second = "0", minute = "*/30", hour = "*")
 	public void collect() {
-		logger.info("StockIndexCollector.collect");
+		logger.info("StockIndexCollector.collect START");
+		List<IndexParser> parserList = new LinkedList<IndexParser>();
+		parserList.add(new IndexParser());
+		parserList.add(new IndexParser());
 
-		SimpleDateFormat sdf = new SimpleDateFormat("hh:mm dd.MM.yyyy");
-		Connection connection = Jsoup
-				.connect("http://gielda.wp.pl/typ,indeksyZagraniczne,notowania.html");
+		for (IndexParser p : parserList) {
+			/*
+			 * data dodania zbioru wartości indeksów do bazy dla danego parsera
+			 * data jest również wykorzystana gdyby okazało się że stockMarket
+			 * nie istnieje jeszcze w bazie
+			 */
+			Date dateOfAdd = new Date();
 
-		try {
-			Document document = connection.post();
-
-			// Wybranie daty
-			Elements elements = document.select(".not_date2").select(".ml10")
-					.select(".mr10").select(".fl");
-
-			Date d = null;
-			if (elements.size() == 1) {
-				d = sdf.parse(elements.get(0).text());
+			Map<String, StockIndex> map = p.getStockIndexList();
+			for (Map.Entry<String, StockIndex> e : map.entrySet()) {
+				String stockMarketName = e.getKey();
+				StockIndex stockIndex = e.getValue();
+				stockIndex.setDateOfAdd(dateOfAdd);
+				addStockIndex(stockMarketName, stockIndex);
 			}
-
-			Elements tableElements = document.select("table.tab");
-			Elements allTr = tableElements.select("tr");
-
-			parseRows(allTr, d);
-
-		} catch (MalformedURLException malfURLExc) {
-			// request URL is not a HTTP or HTTPS URL, or is otherwise malformed
-			logger.error("StockMarketCollector.init malfURLExc", malfURLExc);
-		} catch (HttpStatusException httpStatusExc) {
-			// response is not OK and HTTP response errors are not ignored
-			logger.error("StockMarketCollector.init httpStatusExc",
-					httpStatusExc);
-		} catch (UnsupportedMimeTypeException unsupportedMimeTypeExc) {
-			// response mime type is not supported and those errors are not
-			// ignored
-			logger.error("StockMarketCollector.init unsupportedMimeTypeExc",
-					unsupportedMimeTypeExc);
-		} catch (SocketTimeoutException socketTimeoutExc) {
-			// connection times out
-			logger.error("StockMarketCollector.init socketTimeoutExc",
-					socketTimeoutExc);
-		} catch (IOException ioExcpetion) {
-			logger.error("StockMarketCollector.init ioExcpetion", ioExcpetion);
-		} catch (Exception exception) {
-			logger.error("StockMarketCollector.init exception", exception);
 		}
-
+		logger.info("StockIndexCollector.collect END");
 	}
 
-	private void parseRows(Elements allTr, Date d) {
-		for (Element tr : allTr) {
+	/**
+	 * Dodanie wartości indeksu dla danej giełdy
+	 * 
+	 * @param nameOfStockMarket
+	 *            nazwa giełdy
+	 * @param stockIndex
+	 *            wartość indeksu giełdy
+	 * @return
+	 */
+	private boolean addStockIndex(String nameOfStockMarket,
+			StockIndex stockIndex) {
+		logger.info("StockIndexCollector.createStockMarket - addStockIndex");
+		StockMarket stockMarket = null;
 
-			Elements tds = tr.select("tr > td");
-			if (tds.isEmpty() || tds.size() < 3) {
-				continue;
-			}
+		stockMarket = stockMarketFacade
+				.getStockMarketByAbbreviatedName(nameOfStockMarket);
 
-			Element elTime = tds.get(0);
-			Element elName = tds.get(1);
-			Element elValue = tds.get(3);
-
-			String time = elTime.text();
-			String name = elName.text();
-			String value = elValue.text();
-			value = value.replaceAll("\\s", "");
-			value = value.replaceAll(",", ".");
-			value = value.replaceAll("\u00a0", "");
-			value = value.replaceAll("\\s", "");
-
-			if (value == null || value.isEmpty()) {
-				logger.info("Value of index equals null");
-				continue;
-			}
-
-			Double indexValue = null;
-			try {
-				indexValue = Double.parseDouble(value);
-			} catch (NumberFormatException e) {
-				logger.error("NumberFormatException parseDouble", e);
-			}
-
-			logger.info("time - " + time);
-			logger.info("name - " + name);
-			logger.info("value - " + value);
-			logger.info("indexValue - " + indexValue);
-
-			addStockIndex(time, name, indexValue, d);
-
-		}
-	}
-
-	private boolean addStockIndex(String time, String name, Double value, Date d) {
-		StockMarket stockMarket = stockMarketFacade
-				.getStockMarketByAbbreviatedName(name);
 		if (stockMarket == null) {
-			logger.info("StockIndexCollector.addStockIndex - stockMarket = null");
-			return false;
-		}
+			// próba dodatnia giełdy do bazy
 
-		if (stockindexFacade.stockIndexExists(time, d, stockMarket.getId()) == true) {
-			logger.info("StockIndexCollector.stockIndexExists = true");
-			return false;
+			stockMarket = createStockMarket(nameOfStockMarket);
+
+			if (stockMarket == null) {
+				// Giełda nadal nie istnieje - brak integralności bazy.
+				logger.info("StockIndexCollector.addStockIndex - stockMarket = null / NOT CREATED");
+				logger.info("StockIndexCollector.addStockIndex NOT DONE!");
+				return false;
+			}
 		}
 
 		logger.info("StockIndexCollector.addStockIndex ");
-		Date date = new Date();
-		StockIndex stockIndex = new StockIndex();
-		stockIndex.setDateOfAdd(date);
-		stockIndex.setPrice(value);
-		stockIndex.setDateOfPageUpdate(d);
-		stockIndex.setTimeOfLastUpdate(time);
+
 		if (stockMarketFacade.addStockIndex(stockMarket.getId(), stockIndex) == true) {
+			logger.info("Dodano StockIndex do giełdy o id = "
+					+ stockMarket.getId());
 			return true;
 		} else {
+			logger.info("NIE dodano StockIndex do giełdy o id = "
+					+ stockMarket.getId());
+			logger.info("Możliwy powód - zduplikowanie wartości!");
 			return false;
 		}
+	}
+
+	/**
+	 * Dodanie nowej giełdy do bazy danych i natychmiastowe jej pobranie
+	 * 
+	 * @param nameOfStockMarket
+	 *            nazwa skrócona giełdy
+	 * @return
+	 */
+	private StockMarket createStockMarket(String nameOfStockMarket) {
+		// Gdy nie istnieje dana giełda zostaje autmatycznie dodana do bazy
+		logger.info("StockIndexCollector.createStockMarket - stockMarket = null");
+		StockMarket stockMarket = new StockMarket();
+		stockMarket.setAbbreviatedName(nameOfStockMarket);
+		stockMarket.setDateOfAdd(new Date());
+		stockMarketFacade.createStockMarket(stockMarket);
+		stockMarket = stockMarketFacade
+				.getStockMarketByAbbreviatedName(nameOfStockMarket);
+		return stockMarket;
 	}
 
 	@Timeout
@@ -191,12 +158,12 @@ public class StockIndexCollector {
 		this.stockMarketFacade = stockMarketFacade;
 	}
 
-	public List<StockMarket> getStockMarkets() {
-		return stockMarkets;
+	public StockIndexFacade getStockIndexFacade() {
+		return stockIndexFacade;
 	}
 
-	public void setStockMarkets(List<StockMarket> stockMarkets) {
-		this.stockMarkets = stockMarkets;
+	public void setStockIndexFacade(StockIndexFacade stockIndexFacade) {
+		this.stockIndexFacade = stockIndexFacade;
 	}
 
 }
