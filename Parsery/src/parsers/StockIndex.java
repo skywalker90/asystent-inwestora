@@ -3,48 +3,39 @@ package parsers;
 import java.util.Date;
 
 public class StockIndex {
-	private Date time;
-	private String symbol;
-	private String name;
-	private String value; /* @TODO: change to Double? */
+	private Date _time;
+	private String _name;
+	private String _value; /* @TODO: change to Double? */
 	
 	public Date getTime() {
-		return time;
+		return _time;
 	}
 	
 	public void setTime(Date time) {
-		this.time = time;
+		this._time = time;
 	}
 	
 	public String getName() {
-		return name;
+		return _name;
 	}
 	
 	public void setName(String name) {
-		this.name = name;
+		this._name = name;
 	}
 	
 	public String getValue() {
-		return value;
+		return _value;
 	}
 	
 	public void setValue(String value) {
-		this.value = value;
-	}
-
-	public String getSymbol() {
-		return symbol;
-	}
-
-	public void setSymbol(String symbol) {
-		this.symbol = symbol;
+		this._value = value;
 	}
 	
 	public String toString() {
-		String str = "Symbol: " + symbol + "\n" +
-			"Name: " + name + "\n" +
-			"Value: " + value + "\n" +
-			"Time: " + time.toString() + "\n";
+		String str =
+			"Name: " + _name + "\n" +
+			"Value: " + _value + "\n" +
+			"Time: " + _time.toString() + "\n";
 		
 		return str;
 	}

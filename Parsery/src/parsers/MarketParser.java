@@ -9,31 +9,63 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 public abstract class MarketParser {
-	private Document document = null;
-	private String url = null;
+	//TODO co z tym warunkiem godzinnym, sprawdzane wewnatrz parsera?
+	private Document _document = null;
+	private String _url = null;
+	private LinkedList<StockIndex> _stockIndexesList;
 	
+	protected LinkedList<Element> indexes;
+	
+	/**
+	 * @param url
+	 */
 	public MarketParser(String url) {
-		this.url = url;
+		this._url = url;
+		this.indexes = new LinkedList<Element>();
+		this._stockIndexesList = new LinkedList<StockIndex>();
+	}
+	
+	public LinkedList<StockIndex> getResults(){
+		try{
+			this.getAllIndexesRows();
+			this.parse();
+		}
+		catch(Exception e){
+			System.out.println("nie ma danych");
+		}
+		
+		return this._stockIndexesList;
+	}
+	
+	protected Element getDataContainerById(String Id){
+		Document doc = getDocument();		
+		return  doc.getElementById(Id);
 	}
 	
 	protected Document getDocument() {
-		if(document != null) {
-			return document;
+		if(_document != null) {
+			return _document;
 		}
 		
-		Connection connection = Jsoup.connect(url);
+		Connection connection = Jsoup.connect(_url);
 		
 		try {
-			document = connection.post();
+			_document = connection.post();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
-		return document;
+		return _document;
 	}
 	
-	public abstract LinkedList<Element> getAllIndexesRows();
+	private void parse(){
+		for(Element el : this.indexes){
+			this._stockIndexesList.add(getStockIndex(el));
+		}
+	}
 	
-	public abstract StockIndex getStockIndex(Element index);
+	protected abstract void getAllIndexesRows();
+	protected abstract StockIndex getStockIndex(Element index);
+
 }
