@@ -13,8 +13,6 @@ import org.jboss.logging.Logger;
 
 import com.agsupport.core.jpa.model.Derivative;
 import com.agsupport.core.jpa.model.DerivativeValue;
-import com.agsupport.core.jpa.model.StockIndex;
-import com.agsupport.core.jpa.model.StockMarket;
 
 /**
  * Fasada zarządzająca obiektami typu Derivative znajdującymi się w relacyjnej

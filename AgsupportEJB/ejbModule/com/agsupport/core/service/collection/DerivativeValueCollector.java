@@ -15,15 +15,10 @@ import org.jboss.logging.Logger;
 
 import com.agsupport.core.jpa.facade.DerivativeFacade;
 import com.agsupport.core.jpa.facade.DerivativeValueFacade;
-import com.agsupport.core.jpa.facade.DerivativeValueFacade;
-import com.agsupport.core.jpa.facade.StockMarketFacade;
 import com.agsupport.core.jpa.model.Derivative;
 import com.agsupport.core.jpa.model.DerivativeValue;
-import com.agsupport.core.jpa.model.StockIndex;
-import com.agsupport.core.jpa.model.StockMarket;
 import com.agsupport.parser.derivative.DerivativeParser;
 import com.agsupport.parser.derivative.DerivativeParserForHistory;
-import com.agsupport.parser.index.IndexParserForHistory;
 
 /**
  * Klasa odpowiedzialna za systematyczne pobieranie wartosci instrumentów
