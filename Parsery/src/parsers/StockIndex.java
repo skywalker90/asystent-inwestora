@@ -34,8 +34,8 @@ public class StockIndex {
 	public String toString() {
 		String str =
 			"Name: " + _name + "\n" +
-			"Value: " + _value + "\n" +
-			"Time: " + _time.toString() + "\n";
+			"Value: " + _value + "\n";// +
+//			"Time: " + _time.toString() + "\n";
 		
 		return str;
 	}

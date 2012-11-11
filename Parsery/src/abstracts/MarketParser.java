@@ -1,4 +1,4 @@
-package parsers;
+package abstracts;
 
 import java.io.IOException;
 import java.util.LinkedList;
@@ -7,6 +7,8 @@ import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+
+import parsers.StockIndex;
 
 public abstract class MarketParser {
 	//TODO co z tym warunkiem godzinnym, sprawdzane wewnatrz parsera?
@@ -25,6 +27,9 @@ public abstract class MarketParser {
 		this._stockIndexesList = new LinkedList<StockIndex>();
 	}
 	
+	/**
+	 * @return
+	 */
 	public LinkedList<StockIndex> getResults(){
 		try{
 			this.getAllIndexesRows();
@@ -37,9 +42,8 @@ public abstract class MarketParser {
 		return this._stockIndexesList;
 	}
 	
-	protected Element getDataContainerById(String Id){
-		Document doc = getDocument();		
-		return  doc.getElementById(Id);
+	protected Element getDataContainerById(String Id){		
+		return  getDocument().getElementById(Id);
 	}
 	
 	protected Document getDocument() {

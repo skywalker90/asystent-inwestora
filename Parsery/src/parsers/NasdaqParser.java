@@ -2,6 +2,8 @@ package parsers;
 
 import org.jsoup.nodes.Element;
 
+import abstracts.MarketParser;
+
 public class NasdaqParser extends MarketParser {
 
 	public NasdaqParser(String url) {
