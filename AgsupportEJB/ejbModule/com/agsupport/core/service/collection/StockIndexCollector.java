@@ -14,10 +14,11 @@ import javax.ejb.Timeout;
 import org.jboss.logging.Logger;
 
 import com.agsupport.core.jpa.facade.StockIndexFacade;
-import com.agsupport.core.jpa.facade.StockMartekFacade;
+import com.agsupport.core.jpa.facade.StockMarketFacade;
 import com.agsupport.core.jpa.model.StockIndex;
 import com.agsupport.core.jpa.model.StockMarket;
 import com.agsupport.parser.index.IndexParser;
+import com.agsupport.parser.index.IndexParserForHistory;
 
 /**
  * Klasa odpowiedzialna za systematyczne pobieranie wartosci indeksów dla
@@ -33,7 +34,7 @@ public class StockIndexCollector {
 	private Logger logger = Logger.getLogger(StockIndexCollector.class);
 
 	@EJB
-	private StockMartekFacade stockMarketFacade;
+	private StockMarketFacade stockMarketFacade;
 	@EJB
 	private StockIndexFacade stockIndexFacade;
 
@@ -43,9 +44,9 @@ public class StockIndexCollector {
 	}
 
 	/**
-	 * Metoda Timer Service. Wywoływana co 30 minut. Sekwencyjnie
-	 * wywołuje parsery różnych stron z których pobierane są dane na temat giełd
-	 * oraz wartości indeksów.
+	 * Metoda Timer Service. Wywoływana co 30 minut. Sekwencyjnie wywołuje
+	 * parsery różnych stron z których pobierane są dane na temat giełd oraz
+	 * wartości indeksów.
 	 * 
 	 */
 	@Schedule(persistent = false, second = "0", minute = "*/30", hour = "*")
@@ -56,6 +57,26 @@ public class StockIndexCollector {
 		parserList.add(new IndexParser());
 
 		for (IndexParser p : parserList) {
+
+			if (p instanceof IndexParserForHistory) {
+
+				// JEŚLI istnieje WIG20 to znaczy że historia już istnieje.
+				// TO ZNACZY ŻE HISTORIA JUŻ JEST ZACIĄGNIĘTA
+				if (stockMarketFacade.getStockMarketByAbbreviatedName("WIG20") != null) {
+					continue;
+				}
+
+				Map<String, StockIndex> map = p.getStockIndexList();
+				for (Map.Entry<String, StockIndex> e : map.entrySet()) {
+					// MAPA String - nazwa giełdy
+					// StockIndex ma mieć wypełnioną DATĘ!
+					String stockMarketName = e.getKey();
+					StockIndex stockIndex = e.getValue();
+					addStockIndex(stockMarketName, stockIndex);
+				}
+				continue;
+			}
+
 			/*
 			 * data dodania zbioru wartości indeksów do bazy dla danego parsera
 			 * data jest również wykorzystana gdyby okazało się że stockMarket
@@ -150,11 +171,11 @@ public class StockIndexCollector {
 		this.logger = logger;
 	}
 
-	public StockMartekFacade getStockMarketFacade() {
+	public StockMarketFacade getStockMarketFacade() {
 		return stockMarketFacade;
 	}
 
-	public void setStockMarketFacade(StockMartekFacade stockMarketFacade) {
+	public void setStockMarketFacade(StockMarketFacade stockMarketFacade) {
 		this.stockMarketFacade = stockMarketFacade;
 	}
 

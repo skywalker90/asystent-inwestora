@@ -16,11 +16,14 @@ import org.jboss.logging.Logger;
 import com.agsupport.core.jpa.facade.DerivativeFacade;
 import com.agsupport.core.jpa.facade.DerivativeValueFacade;
 import com.agsupport.core.jpa.facade.DerivativeValueFacade;
-import com.agsupport.core.jpa.facade.StockMartekFacade;
+import com.agsupport.core.jpa.facade.StockMarketFacade;
 import com.agsupport.core.jpa.model.Derivative;
 import com.agsupport.core.jpa.model.DerivativeValue;
+import com.agsupport.core.jpa.model.StockIndex;
 import com.agsupport.core.jpa.model.StockMarket;
 import com.agsupport.parser.derivative.DerivativeParser;
+import com.agsupport.parser.derivative.DerivativeParserForHistory;
+import com.agsupport.parser.index.IndexParserForHistory;
 
 /**
  * Klasa odpowiedzialna za systematyczne pobieranie wartosci instrumentów
@@ -59,6 +62,24 @@ public class DerivativeValueCollector {
 		parserList.add(new DerivativeParser());
 
 		for (DerivativeParser p : parserList) {
+
+			if (p instanceof DerivativeParserForHistory) {
+
+				// TRZEBA UMÓWIĆ SIĘ NA JAKĄŚ NAZWĘ, np. WIG20
+				// Jeśli istnieje, to znaczy że historia również istnieje.
+				if (derivativeFacade.getDerivativeByName("WIG20") != null) {
+					continue;
+				}
+
+				Map<String, DerivativeValue> map = p.getDerivativeValueList();
+				for (Map.Entry<String, DerivativeValue> e : map.entrySet()) {
+					String derivativeName = e.getKey();
+					DerivativeValue derivativeValue = e.getValue();
+					addDerivativeValue(derivativeName, derivativeValue);
+				}
+				continue;
+			}
+			
 			/*
 			 * data dodania zbioru wartości indeksów do bazy dla danego parsera
 			 * data jest również wykorzystana gdyby okazało się że derivative
