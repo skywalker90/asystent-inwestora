@@ -14,7 +14,8 @@ public class Test {
 //		System.out.println(p[2].getResults().toString());
 		LinkedList<MarketParser> p = HistoryFactory.getParsers("20121102");
 		for(MarketParser el : p){
-			el.toString();
+			
+			System.out.println(el.getResults().toString());
 		}
 	}
 }

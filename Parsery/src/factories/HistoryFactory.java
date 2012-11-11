@@ -17,24 +17,33 @@ public class HistoryFactory {
 		String yesterday = _getYesterday();
 		String beforDateUrl = "http://gielda.wp.pl/date,";
 		String afterDateUrl = ",max,20121109,sort,a0,typ,indeksy,notowania.html?ticaid=1f811&_ticrsn=5";
-		String tempDate;
+		String startDay;
 		String dayBefore;
+		String today = _getToday();
 		
-		if(_isWeekend(yesterday)){
-			getParsers( _getDayBefore(yesterday));
-		}else{
-			tempDate = _getToday();
-			while ( _getDayBefore(tempDate).equals(dataStart)){
-				dayBefore =  _getDayBefore(tempDate);
+		startDay = today;
+		
+		while(_isWeekend( _getDayBefore(startDay))){
+			startDay =  _getDayBefore(startDay);
+			System.out.println("wczoraj byl weekend");
+		}
+		
+		System.out.println("start data "+ startDay);
+		System.out.println("target data "+ dataStart);
+
+		while (! _getDayBefore(startDay).equals(dataStart)){
+			
+				dayBefore =  _getDayBefore(startDay);
+				System.out.println("data danych z parsera "+ dayBefore);
 				
 				if(!_isWeekend(dayBefore))
-					parsers.add(new WigHistoryParser(beforDateUrl + dayBefore +afterDateUrl));
+					parsers.add(new WigHistoryParser(beforDateUrl + dayBefore +afterDateUrl, dayBefore));
 				
-				tempDate = dayBefore;
+				startDay = dayBefore;
 			}
-		}
+		
 
-		return null;
+		return parsers;
 	}
 	
 	private static String _getYesterday(){

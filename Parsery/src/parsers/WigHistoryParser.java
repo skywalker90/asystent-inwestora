@@ -3,6 +3,9 @@
  */
 package parsers;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -17,13 +20,14 @@ import abstracts.MarketParser;
  */
 public class WigHistoryParser extends MarketParser{
 	
-
+	private Date _createDate;
 	private static final Set<String> IndexNamesArray = new HashSet<String>(Arrays.asList(
 		     new String[] {"mWIG40", "sWIG80", "WIG", "WIG20", "WIG-CEE", "WIGdiv"}
 		));
 	
-	public WigHistoryParser(String url) {
+	public WigHistoryParser(String url, String Date) throws ParseException {
 		super(url);
+		this._createDate = new SimpleDateFormat("yyyyMMdd").parse(Date);
 	}
 
 	@Override
@@ -46,7 +50,8 @@ public class WigHistoryParser extends MarketParser{
 			/* value */
 			stockindex.setValue(index.child(2).text());
 			
-			
+			/* date */
+			stockindex.setTime(this._createDate);
 			return stockindex;
 	}
 
