@@ -10,6 +10,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import models.MarketIndex;
+
 import org.jsoup.nodes.Element;
 
 import abstracts.MarketParser;
@@ -35,14 +37,14 @@ public class WigHistoryParser extends MarketParser{
 		Element tbody = this.getDocument().getElementsByClass("tab_fld").first().getElementsByTag("tbody").first();
 		for(Element tr : tbody.children()) {
 			if(IndexNamesArray.contains(tr.getElementsByClass("name").text())){
-			this.indexes.add(tr);
+				this.indexes.add(tr);
 			}
 		}
 	}
 
 	@Override
-	protected StockIndex getStockIndex(Element index) {
-			StockIndex stockindex = new StockIndex();
+	protected MarketIndex getStockIndex(Element index) {
+			MarketIndex stockindex = new MarketIndex();
 			
 			/* name */
 			stockindex.setName(index.getElementsByClass("name").text());
@@ -52,6 +54,7 @@ public class WigHistoryParser extends MarketParser{
 			
 			/* date */
 			stockindex.setTime(this._createDate);
+			
 			return stockindex;
 	}
 

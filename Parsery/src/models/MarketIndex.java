@@ -1,8 +1,11 @@
-package parsers;
+package models;
+
+import interfaces.Index;
 
 import java.util.Date;
 
-public class StockIndex {
+
+public class MarketIndex implements Index{
 	private Date _time;
 	private String _name;
 	private String _value; /* @TODO: change to Double? */

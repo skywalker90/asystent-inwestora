@@ -1,5 +1,7 @@
 package parsers;
 
+import models.MarketIndex;
+
 import org.jsoup.nodes.Element;
 
 import abstracts.MarketParser;
@@ -24,8 +26,8 @@ public class WigParser extends MarketParser {
 	}
 
 	@Override
-	protected StockIndex getStockIndex(Element index) {
-		StockIndex stockindex = new StockIndex();
+	protected MarketIndex getStockIndex(Element index) {
+		MarketIndex stockindex = new MarketIndex();
 		
 		/* name */
 		stockindex.setName(index.child(0).text());

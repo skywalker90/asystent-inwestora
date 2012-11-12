@@ -1,20 +1,23 @@
 package abstracts;
 
-import java.io.IOException;
-import java.util.LinkedList;
+import interfaces.Index;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import parsers.StockIndex;
+
 
 public abstract class MarketParser {
 	//TODO co z tym warunkiem godzinnym, sprawdzane wewnatrz parsera?
 	private Document _document = null;
 	private String _url = null;
-	private LinkedList<StockIndex> _stockIndexesList;
+	private LinkedList<Map<String, Index>> _stockIndexesList;
 	
 	protected LinkedList<Element> indexes;
 	
@@ -24,13 +27,13 @@ public abstract class MarketParser {
 	public MarketParser(String url) {
 		this._url = url;
 		this.indexes = new LinkedList<Element>();
-		this._stockIndexesList = new LinkedList<StockIndex>();
+		this._stockIndexesList = new LinkedList<Map<String, Index>>();
 	}
 	
 	/**
 	 * @return
 	 */
-	public LinkedList<StockIndex> getResults(){
+	public LinkedList<Map<String, Index>> getResults(){
 		try{
 			this.getAllIndexesRows();
 			this.parse();
@@ -65,11 +68,18 @@ public abstract class MarketParser {
 	
 	private void parse(){
 		for(Element el : this.indexes){
-			this._stockIndexesList.add(getStockIndex(el));
+			Index indexToAdd = getStockIndex(el);
+			Map<String, Index> map = new HashMap<String, Index>();
+			map.put(indexToAdd.getName(), indexToAdd);
+			this._stockIndexesList.add(map);
 		}
 	}
 	
+	public void  getGetAllIndexesRows(){
+		getAllIndexesRows();
+	}
+	
 	protected abstract void getAllIndexesRows();
-	protected abstract StockIndex getStockIndex(Element index);
+	protected abstract Index getStockIndex(Element index);
 
 }
