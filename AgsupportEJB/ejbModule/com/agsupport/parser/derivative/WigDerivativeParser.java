@@ -1,19 +1,20 @@
-package parsers;
+package com.agsupport.parser.derivative;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-
-import models.DerivativeIndex;
-
 import org.jsoup.nodes.Element;
 
-import abstracts.MarketParser;
+import com.agsupport.core.jpa.model.DerivativeValue;
 
-public class DerivativeParser extends MarketParser{
+public class WigDerivativeParser extends DerivativeParser {
 	private Date _createDate;
 	
-	public DerivativeParser(String url, String date) throws ParseException {
+	public WigDerivativeParser() {
+		super("http://gielda.wp.pl/typ,kontraktyiji_kontrakty_indeksowe,notowania.html");
+	}
+	
+	public WigDerivativeParser(String url, String date) throws ParseException {
 		super(url);
 		this._createDate = new SimpleDateFormat("yyyyMMdd").parse(date);	
 	}
@@ -45,27 +46,38 @@ public class DerivativeParser extends MarketParser{
 	}
 	
 	@Override
-	protected void getAllIndexesRows() {
+	protected void getAllValuesRows() {
 		Element tbody = this.getDocument().getElementsByClass("tab_fld").first().getElementsByTag("tbody").first();
 		int counter = 0;
 		for(Element tr : tbody.children()) {
-			if(counter>1)	
+			if(counter > 1 && counter < 6)	
 				this.indexes.add(tr);		
 			counter++;
 		}
 	}
 
 	@Override
-	protected DerivativeIndex getStockIndex(Element index) {
-		DerivativeIndex derIndex = new DerivativeIndex();
+	protected DerivativeValue getValue(Element index) {
+		DerivativeValue derIndex = new DerivativeValue();
 		String name;
 		
-		/* data wpisu*/
 		derIndex.setDateOfAdd(this._createDate);
 		
 		name = index.child(1).text();
 		
-		derIndex.setName(name);
+		derIndex.setPrice(parsePrice(index.child(2).text()));
+		derIndex.setDateOfAdd(new Date());
+		
+		/* todo: na pewno o to chodzilo? */
+		switch(name.charAt(2)) {
+			case '2':
+				setStockMarketName("WIG20");
+				break;
+			case '4':
+				setStockMarketName("WIG40");
+				break;
+		}
+	
 		try {
 			derIndex.setExpiredDate(_parseExpireDate(name));
 		} catch (ParseException e) {
@@ -76,4 +88,10 @@ public class DerivativeParser extends MarketParser{
 		return derIndex;
 	}
 
+	private Double parsePrice(String str) {
+		str = str.replaceAll(" ", "");
+		str = str.replaceAll(",", ".");
+		
+		return Double.parseDouble(str);
+	}
 }

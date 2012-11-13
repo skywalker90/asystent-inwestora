@@ -1,7 +1,7 @@
 /**
  * 
  */
-package parsers;
+package com.agsupport.parser.index;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -10,25 +10,20 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import models.MarketIndex;
-
 import org.jsoup.nodes.Element;
 
-import abstracts.MarketParser;
+import com.agsupport.core.jpa.model.StockIndex;
 
-/**
- * @author admin
- *
- */
-public class WigHistoryParser extends MarketParser{
-	
+public class WigHistoryParser extends IndexParser {
 	private Date _createDate;
+	
 	private static final Set<String> IndexNamesArray = new HashSet<String>(Arrays.asList(
 		     new String[] {"mWIG40", "sWIG80", "WIG", "WIG20", "WIG-CEE", "WIGdiv"}
 		));
 	
 	public WigHistoryParser(String url, String Date) throws ParseException {
 		super(url);
+		setStockMarketName("WIG");
 		this._createDate = new SimpleDateFormat("yyyyMMdd").parse(Date);
 	}
 
@@ -36,26 +31,29 @@ public class WigHistoryParser extends MarketParser{
 	protected void getAllIndexesRows() {
 		Element tbody = this.getDocument().getElementsByClass("tab_fld").first().getElementsByTag("tbody").first();
 		for(Element tr : tbody.children()) {
-			if(IndexNamesArray.contains(tr.getElementsByClass("name").text())){
+			if(IndexNamesArray.contains(tr.getElementsByClass("name").text())) {
 				this.indexes.add(tr);
 			}
 		}
 	}
 
 	@Override
-	protected MarketIndex getStockIndex(Element index) {
-			MarketIndex stockindex = new MarketIndex();
-			
-			/* name */
-			stockindex.setName(index.getElementsByClass("name").text());
-			
+	protected StockIndex getIndex(Element index) {
+			StockIndex stockindex = new StockIndex();
+						
 			/* value */
-			stockindex.setValue(index.child(2).text());
+			stockindex.setPrice(parsePrice(index.child(2).text()));
 			
 			/* date */
-			stockindex.setTime(this._createDate);
+			stockindex.setDateOfAdd(this._createDate);
 			
 			return stockindex;
 	}
 
+	private Double parsePrice(String str) {
+		str = str.replaceAll(" ", "");
+		str = str.replaceAll(",", ".");
+		
+		return Double.parseDouble(str);
+	}
 }
