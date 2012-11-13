@@ -16,7 +16,6 @@ public abstract class DerivativeParser {
 	private Document _document = null;
 	private String _url = null;
 	private LinkedList<DerivativeValue> _stockValuesList = new LinkedList<DerivativeValue>();
-	private Map<String, DerivativeValue> _map = new HashMap<String, DerivativeValue>(); 
 	
 	protected LinkedList<Element> indexes = new LinkedList<Element>();
 	protected String stockMarketName; 
@@ -74,17 +73,16 @@ public abstract class DerivativeParser {
 		this.stockMarketName = stockMarketName;
 	}
 	
-	public Map<String, DerivativeValue> getStockIndexList() {
-		/* don't blame me, it's all because of Radoslaw's ridiculous fantasy ;-) */
+	public Map<String, LinkedList<DerivativeValue>> getDerivativeValueList() {	
+		Map<String, LinkedList<DerivativeValue>> map = new HashMap<String, LinkedList<DerivativeValue>>();
+		
 		if(_stockValuesList.isEmpty()) {
 			getResults();
 		}
 		
-		for(DerivativeValue si : _stockValuesList) {
-			_map.put(getStockMarketName(), si);
-		}
+		map.put(getStockMarketName(), _stockValuesList);
 		
-		return _map;
+		return map;
 	}
 	
 	protected abstract void getAllValuesRows();
