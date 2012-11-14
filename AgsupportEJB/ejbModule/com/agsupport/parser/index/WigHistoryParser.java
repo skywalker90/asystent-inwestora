@@ -33,7 +33,7 @@ public class WigHistoryParser extends IndexParser {
 		for(Element tr : tbody.children()) {
 			if(IndexNamesArray.contains(tr.getElementsByClass("name").text())) {
 				this.indexes.add(tr);
-				this.stockMarketNames.add(tr.child(0).text().trim());
+				this.stockMarketNames.add(tr.child(1).text().trim());
 			}
 		}
 	}

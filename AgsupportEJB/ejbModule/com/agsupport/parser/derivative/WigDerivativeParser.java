@@ -10,8 +10,9 @@ import com.agsupport.core.jpa.model.DerivativeValue;
 public class WigDerivativeParser extends DerivativeParser {
 	private Date _createDate;
 	
-	public WigDerivativeParser() {
+	public WigDerivativeParser() throws ParseException {
 		super("http://gielda.wp.pl/typ,kontraktyiji_kontrakty_indeksowe,notowania.html");
+		this._createDate = new SimpleDateFormat("yyyyMMdd").parse(date);
 		setIsForHistory(true);
 	}
 	
