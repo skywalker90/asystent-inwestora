@@ -24,11 +24,21 @@ public class CommodityOnlineParser extends DerivativeParser {
 			
 		for(int i = 0; i < ul.children().size(); i += 4) {
 			Element div = new Element(Tag.valueOf("div"), "");
+			String expiryDate = ul.child(i).text();
+			Boolean unique = true;
 			
 			div.appendChild(ul.child(i).clone());
 			div.appendChild(ul.child(i + 1).clone());
 			
-			indexes.add(div);
+			for(Element index : indexes){
+				if(index.child(0).text().equals(expiryDate)) {
+					System.out.println("Yes");
+					unique = false;
+				}
+			}
+			
+			if(unique)
+				indexes.add(div);
 		}
 	}
 
@@ -49,7 +59,7 @@ public class CommodityOnlineParser extends DerivativeParser {
 	}
 	
 	private Date parseDate(String date) throws ParseException {
-		SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yy", Locale.ENGLISH);
+		SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH);
 		
 		return sdf.parse(date);
 	}
