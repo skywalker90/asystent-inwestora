@@ -5,7 +5,8 @@ import java.util.logging.Logger;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import javax.ws.rs.Consumes;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -17,6 +18,9 @@ import com.agsupport.core.jpa.facade.StockIndexFacade;
 import com.agsupport.core.jpa.facade.StockMarketFacade;
 import com.agsupport.core.jpa.model.Derivative;
 import com.agsupport.core.jpa.model.StockMarket;
+import com.agsupport.core.service.communication.JSONDerivative;
+import com.agsupport.core.service.communication.JSONMapper;
+import com.agsupport.core.service.communication.JSONStockMarket;
 import com.agsupport.core.service.communication.ListOfDate;
 import com.agsupport.core.service.communication.ListOfDerivative;
 import com.agsupport.core.service.communication.ListOfDerivativeValue;
@@ -27,50 +31,54 @@ import com.agsupport.core.service.communication.ListOfStockMarket;
 @Path("/service")
 public class HelloWorldResource {
 
-	@EJB
-	DerivativeFacade derivativeFacade;
-
-	@EJB
-	DerivativeValueFacade derivativeValueFacade;
-
-	@EJB
-	StockIndexFacade stockIndexFacade;
-
-	@EJB
-	StockMarketFacade stockMarketFacade;
-
 	private Logger logger = Logger.getLogger("HelloWorldResource");
+
+	@EJB
+	private DerivativeFacade derivativeFacade;
+
+	@EJB
+	private DerivativeValueFacade derivativeValueFacade;
+
+	@EJB
+	private StockIndexFacade stockIndexFacade;
+
+	@EJB
+	private StockMarketFacade stockMarketFacade;
 
 	@GET
 	@Produces("application/json")
 	@Path("getDerivativeList")
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 	public ListOfDerivative getDerivativeList() {
 		logger.info("HelloWorldResource.getDerivativeList - invoked");
-		return new ListOfDerivative(derivativeFacade.getDerivativeList());
+		JSONMapper jsonMapper = new JSONMapper();
+		return jsonMapper.mapJSONDerivativeList(derivativeFacade
+				.getDerivativeList());
 	}
 
 	@GET
 	@Produces("application/json")
-	@Consumes("application/json")
 	@Path("getDerivativeById")
-	public Derivative getDerivativeById(
+	public JSONDerivative getDerivativeById(
 			@QueryParam("derivativeId") long derivativeId) {
 		logger.info("HelloWorldResource.getDerivativeById - invoked");
-		return derivativeFacade.getDerivativeById(derivativeId);
+		JSONMapper jsonMapper = new JSONMapper();
+		return jsonMapper.mapJSONDerivative(derivativeFacade
+				.getDerivativeById(derivativeId));
 	}
 
 	@GET
 	@Produces("application/json")
-	@Consumes("application/json")
 	@Path("getDerivativeByName")
-	public Derivative getDerivativeByName(@QueryParam("name") String name) {
+	public JSONDerivative getDerivativeByName(@QueryParam("name") String name) {
 		logger.info("HelloWorldResource.getDerivativeByName - invoked");
-		return derivativeFacade.getDerivativeByName(name);
+		JSONMapper jsonMapper = new JSONMapper();
+		return jsonMapper.mapJSONDerivative(derivativeFacade
+				.getDerivativeByName(name));
 	}
 
 	@GET
 	@Produces("application/json")
-	@Consumes("application/json")
 	@Path("deleteDerivativeValue")
 	public Boolean deleteDerivativeValue(
 			@QueryParam("derivativeValueId") long derivativeValueId) {
@@ -80,7 +88,6 @@ public class HelloWorldResource {
 
 	@GET
 	@Produces("application/json")
-	@Consumes("application/json")
 	@Path("updateDerivative")
 	public Boolean updateDerivative(@QueryParam("dateOfAdd") long dateOfAdd,
 			@QueryParam("description") String description,
@@ -96,35 +103,33 @@ public class HelloWorldResource {
 
 	@GET
 	@Produces("application/json")
-	@Consumes("application/json")
 	@Path("getDerivativeValuesByDateOfAdd")
 	public ListOfDerivativeValue getDerivativeValuesByDateOfAdd(
 			@QueryParam("dateOfAdd") long dateOfAdd,
 			@QueryParam("derivativeId") long derivativeId) {
 		logger.info("HelloWorldResource.getDerivativeValuesByDateOfAdd - invoked");
-		return new ListOfDerivativeValue(
-				derivativeValueFacade.getDerivativeValuesByDateOfAdd(new Date(
-						dateOfAdd), derivativeId));
+		JSONMapper jsonMapper = new JSONMapper();
+		return jsonMapper.mapJSONStockDerivativeValueList(derivativeValueFacade
+				.getDerivativeValuesByDateOfAdd(new Date(dateOfAdd),
+						derivativeId));
 	}
 
 	@GET
 	@Produces("application/json")
-	@Consumes("application/json")
 	@Path("getDerivativeValuesForRangeAndExpireDate")
 	public ListOfDerivativeValue getDerivativeValuesForRangeAndExpireDate(
 			@QueryParam("from") long from, @QueryParam("to") long to,
 			@QueryParam("expierdDate") long expierdDate,
 			@QueryParam("derivativeId") long derivativeId) {
 		logger.info("HelloWorldResource.getDerivativeValuesForRangeAndExpireDate - invoked");
-		return new ListOfDerivativeValue(
-				derivativeValueFacade.getDerivativeValuesForRangeAndExpireDate(
-						new Date(from), new Date(to), new Date(expierdDate),
-						derivativeId));
+		JSONMapper jsonMapper = new JSONMapper();
+		return jsonMapper.mapJSONStockDerivativeValueList(derivativeValueFacade
+				.getDerivativeValuesForRangeAndExpireDate(new Date(from),
+						new Date(to), new Date(expierdDate), derivativeId));
 	}
 
 	@GET
 	@Produces("application/json")
-	@Consumes("application/json")
 	@Path("getExpiredDateList")
 	public ListOfDate getExpiredDateList(
 			@QueryParam("derivativeId") long derivativeId) {
@@ -135,7 +140,6 @@ public class HelloWorldResource {
 
 	@GET
 	@Produces("application/json")
-	@Consumes("application/json")
 	@Path("getDateOfAddList")
 	public ListOfDate getDateOfAddList(
 			@QueryParam("derivativeId") long derivativeId) {
@@ -146,30 +150,30 @@ public class HelloWorldResource {
 
 	@GET
 	@Produces("application/json")
-	@Consumes("application/json")
 	@Path("getAllStockIndex")
 	public ListOfStockIndex getAllStockIndex(
 			@QueryParam("stockMarketId") long stockMarketId) {
 		logger.info("HelloWorldResource.getAllStockIndex - invoked");
-		return new ListOfStockIndex(
-				stockIndexFacade.getAllStockIndex(stockMarketId));
+		JSONMapper jsonMapper = new JSONMapper();
+		return jsonMapper.mapJSONStockIndexList(stockIndexFacade
+				.getAllStockIndex(stockMarketId));
 	}
 
 	@GET
 	@Produces("application/json")
-	@Consumes("application/json")
 	@Path("getAllStockIndex")
 	public ListOfStockIndex getAllStockIndex(
 			@QueryParam("stockMarketId") long stockMarketId,
 			@QueryParam("from") long from, @QueryParam("to") long to) {
 		logger.info("HelloWorldResource.getAllStockIndex - invoked");
-		return new ListOfStockIndex(stockIndexFacade.getStockIndexForRange(
-				stockMarketId, new Date(from), new Date(to)));
+		JSONMapper jsonMapper = new JSONMapper();
+		return jsonMapper.mapJSONStockIndexList(stockIndexFacade
+				.getStockIndexForRange(stockMarketId, new Date(from), new Date(
+						to)));
 	}
 
 	@GET
 	@Produces("application/json")
-	@Consumes("application/json")
 	@Path("updateStockMarket")
 	public Boolean updateStockMarket(
 			@QueryParam("stockMarketId") long stockMarketId,
@@ -189,37 +193,38 @@ public class HelloWorldResource {
 
 	@GET
 	@Produces("application/json")
-	@Consumes("application/json")
 	@Path("getStockMarketList")
 	public ListOfStockMarket getStockMarketList() {
 		logger.info("HelloWorldResource.getStockMarketList - invoked");
-		return new ListOfStockMarket(stockMarketFacade.getStockMarketList());
+		JSONMapper jsonMapper = new JSONMapper();
+		return jsonMapper.mapJSONStockMarketList(stockMarketFacade
+				.getStockMarketList());
 	}
 
 	@GET
 	@Produces("application/json")
-	@Consumes("application/json")
 	@Path("getStockMarketById")
-	public StockMarket getStockMarketById(
+	public JSONStockMarket getStockMarketById(
 			@QueryParam("stockMarketId") long stockMarketId) {
 		logger.info("HelloWorldResource.getStockMarketById - invoked");
-		return stockMarketFacade.getStockMarketById(stockMarketId);
+		JSONMapper jsonMapper = new JSONMapper();
+		return jsonMapper.mapJSONStockMarket(stockMarketFacade
+				.getStockMarketById(stockMarketId));
 	}
 
 	@GET
 	@Produces("application/json")
-	@Consumes("application/json")
 	@Path("getStockMarketByAbbreviatedName")
-	public StockMarket getStockMarketByAbbreviatedName(
+	public JSONStockMarket getStockMarketByAbbreviatedName(
 			@QueryParam("abberviatedName") String abberviatedName) {
 		logger.info("HelloWorldResource.getStockMarketByAbbreviatedName - invoked");
-		return stockMarketFacade
-				.getStockMarketByAbbreviatedName(abberviatedName);
+		JSONMapper jsonMapper = new JSONMapper();
+		return jsonMapper.mapJSONStockMarket(stockMarketFacade
+				.getStockMarketByAbbreviatedName(abberviatedName));
 	}
 
 	@GET
 	@Produces("application/json")
-	@Consumes("application/json")
 	@Path("deleteStockIndex")
 	public Boolean deleteStockIndex(
 			@QueryParam("stockIndexId") long stockIndexId) {

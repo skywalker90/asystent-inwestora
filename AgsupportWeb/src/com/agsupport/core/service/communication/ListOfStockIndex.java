@@ -7,20 +7,20 @@ import com.agsupport.core.jpa.model.StockIndex;
 
 public class ListOfStockIndex implements Serializable {
 
-	private List<StockIndex> stockIndexes;
+	private List<JSONStockIndex> stockIndexes;
 
 	public ListOfStockIndex() {
 	}
 
-	public ListOfStockIndex(List<StockIndex> stockIndexes) {
+	public ListOfStockIndex(List<JSONStockIndex> stockIndexes) {
 		this.stockIndexes = stockIndexes;
 	}
 
-	public List<StockIndex> getStockIndexes() {
+	public List<JSONStockIndex> getStockIndexes() {
 		return stockIndexes;
 	}
 
-	public void setStockIndexes(List<StockIndex> stockIndexes) {
+	public void setStockIndexes(List<JSONStockIndex> stockIndexes) {
 		this.stockIndexes = stockIndexes;
 	}
 

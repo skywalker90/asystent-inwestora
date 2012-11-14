@@ -7,20 +7,20 @@ import com.agsupport.core.jpa.model.StockMarket;
 
 public class ListOfStockMarket implements Serializable {
 
-	private List<StockMarket> stockMarkets;
+	private List<JSONStockMarket> stockMarkets;
 
 	public ListOfStockMarket() {
 	}
 
-	public ListOfStockMarket(List<StockMarket> stockMarkets) {
+	public ListOfStockMarket(List<JSONStockMarket> stockMarkets) {
 		this.stockMarkets = stockMarkets;
 	}
 
-	public List<StockMarket> getStockMarkets() {
+	public List<JSONStockMarket> getStockMarkets() {
 		return stockMarkets;
 	}
 
-	public void setStockMarkets(List<StockMarket> stockMarkets) {
+	public void setStockMarkets(List<JSONStockMarket> stockMarkets) {
 		this.stockMarkets = stockMarkets;
 	}
 
