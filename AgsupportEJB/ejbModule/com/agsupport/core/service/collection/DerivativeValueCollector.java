@@ -1,5 +1,6 @@
 package com.agsupport.core.service.collection;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -18,6 +19,7 @@ import com.agsupport.core.jpa.facade.DerivativeValueFacade;
 import com.agsupport.core.jpa.model.Derivative;
 import com.agsupport.core.jpa.model.DerivativeValue;
 import com.agsupport.parser.derivative.DerivativeParser;
+import com.agsupport.parser.derivative.WigDerivativeParser;
 import com.agsupport.parser.factories.CommodityOnlineFactory;
 import com.agsupport.parser.factories.ForexprosFactory;
 import com.agsupport.parser.factories.WigDerivativeHistoryFactory;
@@ -43,6 +45,46 @@ public class DerivativeValueCollector {
 	@PostConstruct
 	public void init() {
 		logger.info("DerivativeValueCollector.init START");
+
+		List<DerivativeParser> parserList = new LinkedList<DerivativeParser>();
+
+		/* tu wpisać datę */
+		parserList.addAll(WigDerivativeHistoryFactory.getParsers("20121102"));
+
+		if (derivativeFacade.getDerivativeByName("WIG20") == null) {
+			logger.info("History for DerivativeValue WIG20 NOT EXIST");
+			logger.info("History for DerivativeValue WIG20 START");
+			for (DerivativeParser p : parserList) {
+
+				if (p.getIsForHistory()) {
+					logger.info("DerivativeValue - History PARSER");
+
+					// TRZEBA UMÓWIĆ SIĘ NA JAKĄŚ NAZWĘ, np. WIG20 // Jeśli
+					// istnieje, to
+					// znaczy że historia również istnieje.
+
+					logger.info("History for DerivativeValue WIG20 NOT EXIST");
+
+					Map<String, LinkedList<DerivativeValue>> map = p
+							.getDerivativeValueList();
+					for (Map.Entry<String, LinkedList<DerivativeValue>> e : map
+							.entrySet()) {
+						logger.info("H - DerivativeValue for Derivative - "
+								+ e.getKey());
+						String derivativeName = e.getKey();
+						List<DerivativeValue> derivativeValues = e.getValue();
+						for (DerivativeValue derivativeValue : derivativeValues) {
+							addDerivativeValue(derivativeName, derivativeValue);
+						}
+					}
+					continue;
+				}
+			}
+			logger.info("History for DerivativeValue WIG20 END");
+		}
+
+		logger.info("DerivativeValueCollector.init END");
+
 	}
 
 	/**
@@ -51,40 +93,24 @@ public class DerivativeValueCollector {
 	 * pochodnych
 	 * 
 	 */
-	@Schedule(persistent = false, second = "0", minute = "*/30", hour = "*")
+	@Schedule(persistent = false, second = "0", minute = "*/10", hour = "*")
 	public void collect() {
+
 		logger.info("DerivativeValueCollector.collect START");
+
 		List<DerivativeParser> parserList = new LinkedList<DerivativeParser>();
-		
+
 		parserList.addAll(Arrays.asList(CommodityOnlineFactory.getParsers()));
 		parserList.addAll(Arrays.asList(ForexprosFactory.getParsers()));
-		/* tu wpisać datę */
-		parserList.addAll(WigDerivativeHistoryFactory.getParsers("20121102"));
-		
+		parserList.add(new WigDerivativeParser());
+
 		/*
-		 * UWAGA od doba: parsery nie mają wypełnionego pola Derivative
-		 * nie wiem, czy któraś z metod ma już to zaimplementowane
-		*/
+		 * UWAGA od doba: parsery nie mają wypełnionego pola Derivative nie
+		 * wiem, czy któraś z metod ma już to zaimplementowane
+		 */
 
 		for (DerivativeParser p : parserList) {
 
-			if (p.getIsForHistory()) {
-
-				// TRZEBA UMÓWIĆ SIĘ NA JAKĄŚ NAZWĘ, np. WIG20
-				// Jeśli istnieje, to znaczy że historia również istnieje.
-				if (derivativeFacade.getDerivativeByName("WIG20") != null) {
-					continue;
-				}
-
-				Map<String, DerivativeValue> map = p.getDerivativeValueList();
-				for (Map.Entry<String, DerivativeValue> e : map.entrySet()) {
-					String derivativeName = e.getKey();
-					DerivativeValue derivativeValue = e.getValue();
-					addDerivativeValue(derivativeName, derivativeValue);
-				}
-				continue;
-			}
-			
 			/*
 			 * data dodania zbioru wartości indeksów do bazy dla danego parsera
 			 * data jest również wykorzystana gdyby okazało się że derivative
@@ -92,12 +118,18 @@ public class DerivativeValueCollector {
 			 */
 			Date dateOfAdd = new Date();
 
-			Map<String, DerivativeValue> map = p.getDerivativeValueList();
-			for (Map.Entry<String, DerivativeValue> e : map.entrySet()) {
+			Map<String, LinkedList<DerivativeValue>> map = p
+					.getDerivativeValueList();
+			for (Map.Entry<String, LinkedList<DerivativeValue>> e : map
+					.entrySet()) {
+				logger.info("B - DerivativeValue for Derivative - "
+						+ e.getKey());
 				String derivativeName = e.getKey();
-				DerivativeValue derivativeValue = e.getValue();
-				derivativeValue.setDateOfAdd(dateOfAdd);
-				addDerivativeValue(derivativeName, derivativeValue);
+				List<DerivativeValue> derivativeValues = e.getValue();
+				for (DerivativeValue derivativeValue : derivativeValues) {
+					derivativeValue.setDateOfAdd(dateOfAdd);
+					addDerivativeValue(derivativeName, derivativeValue);
+				}
 			}
 		}
 		logger.info("DerivativeValueCollector.collect END");

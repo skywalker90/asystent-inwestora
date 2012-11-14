@@ -4,6 +4,8 @@ import java.util.Date;
 import java.util.List;
 
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TemporalType;
@@ -40,6 +42,7 @@ public class DerivativeValueFacade {
 	 *            wartości
 	 * @return lista wartości instumentu pochodnego
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	public List<DerivativeValue> getDerivativeValuesByDateOfAdd(Date dateOfAdd,
 			long derivativeId) {
 		try {
@@ -76,6 +79,7 @@ public class DerivativeValueFacade {
 	 *            wartości
 	 * @return lista wartości instumentu pochodnego
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	public List<DerivativeValue> getDerivativeValuesForRangeAndExpireDate(
 			Date from, Date to, Date expierdDate, long derivativeId) {
 		try {
@@ -105,6 +109,7 @@ public class DerivativeValueFacade {
 	 *            id instrumentu pochodnego
 	 * @return list dat
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	public List<Date> getExpiredDateList(long derivativeId) {
 		try {
 			TypedQuery<Date> query = em
@@ -127,6 +132,7 @@ public class DerivativeValueFacade {
 	 *            id instrumentu pochodnego
 	 * @return list dat
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	public List<Date> getDateOfAddList(long derivativeId) {
 		try {
 			TypedQuery<Date> query = em

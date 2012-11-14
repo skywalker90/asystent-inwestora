@@ -44,6 +44,37 @@ public class StockIndexCollector {
 	@PostConstruct
 	public void init() {
 		logger.info("StockIndexCollector.init START");
+
+		if (stockMarketFacade.getStockMarketByAbbreviatedName("WIG20") == null) {
+			logger.info("History for index WIG20 NOT EXISTS");
+			logger.info("History for index WIG20 START");
+			List<IndexParser> parserList = new LinkedList<IndexParser>();
+
+			// tu wpisać datę
+			parserList.addAll(WigHistoryFactory.getParsers("20121102"));
+
+			for (IndexParser p : parserList) {
+
+				if (p.getIsForHistory()) {
+					logger.info("StockIndex - History PARSER");
+
+					logger.info("History for index WIG20 NOT EXISTS");
+					Map<String, StockIndex> map = p.getStockIndexList();
+					for (Map.Entry<String, StockIndex> e : map.entrySet()) {
+						logger.info("History PARSER for - " + e.getKey());
+						// MAPA String - nazwa giełdy
+						// StockIndex ma mieć wypełnioną DATĘ!
+						String stockMarketName = e.getKey();
+						StockIndex stockIndex = e.getValue();
+						addStockIndex(stockMarketName, stockIndex);
+					}
+					continue;
+				}
+			}
+			logger.info("History for index WIG20 END");
+		}
+		logger.info("StockIndexCollector.init END");
+
 	}
 
 	/**
@@ -52,34 +83,37 @@ public class StockIndexCollector {
 	 * wartości indeksów.
 	 * 
 	 */
-	@Schedule(persistent = false, second = "0", minute = "*/30", hour = "*")
+	@Schedule(persistent = false, second = "0", minute = "*/10", hour = "*")
 	public void collect() {
 		logger.info("StockIndexCollector.collect START");
 		List<IndexParser> parserList = new LinkedList<IndexParser>();
-		
+
 		/* tu wpisać datę */
-		parserList.addAll(WigHistoryFactory.getParsers("20121102"));
-		
+
 		parserList.add(new NasdaqParser());
 		parserList.add(new WigParser());
 
 		/*
-		 * UWAGA od doba: parsery nie mają wypełnionego pola StockMarket
-		 * nie wiem, czy któraś z metod ma już to zaimplementowane
-		*/
-		
+		 * UWAGA od doba: parsery nie mają wypełnionego pola StockMarket nie
+		 * wiem, czy któraś z metod ma już to zaimplementowane
+		 */
+
 		for (IndexParser p : parserList) {
 
 			if (p.getIsForHistory()) {
+				logger.info("StockIndex - History PARSER");
 
 				// JEŚLI istnieje WIG20 to znaczy że historia już istnieje.
 				// TO ZNACZY ŻE HISTORIA JUŻ JEST ZACIĄGNIĘTA
+
 				if (stockMarketFacade.getStockMarketByAbbreviatedName("WIG20") != null) {
+					logger.info("History for index WIG20 EXISTS");
 					continue;
 				}
-
+				logger.info("History for index WIG20 NOT EXISTS");
 				Map<String, StockIndex> map = p.getStockIndexList();
 				for (Map.Entry<String, StockIndex> e : map.entrySet()) {
+					logger.info("History PARSER for - " + e.getKey());
 					// MAPA String - nazwa giełdy
 					// StockIndex ma mieć wypełnioną DATĘ!
 					String stockMarketName = e.getKey();

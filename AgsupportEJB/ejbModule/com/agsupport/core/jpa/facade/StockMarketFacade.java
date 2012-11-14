@@ -4,6 +4,8 @@ import java.util.Date;
 import java.util.List;
 
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
@@ -36,6 +38,7 @@ public class StockMarketFacade {
 	 *            tworzona giełda
 	 * @return
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	public boolean createStockMarket(StockMarket stockMarket) {
 		try {
 			stockMarket.setDateOfAdd(new Date());
@@ -55,6 +58,7 @@ public class StockMarketFacade {
 	 *            obiektem aktualizowanym w bazie)
 	 * @return
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	public boolean updateStockMarket(StockMarket stockMarket) {
 		try {
 			em.merge(stockMarket);
@@ -72,6 +76,7 @@ public class StockMarketFacade {
 	 *            id usuwanej giełdy
 	 * @return
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	public boolean deleteStockMarket(long stockMarketId) {
 		try {
 			StockMarket stockMarket = em.find(StockMarket.class, stockMarketId);
@@ -88,6 +93,7 @@ public class StockMarketFacade {
 	 * 
 	 * @return
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	public List<StockMarket> getStockMarketList() {
 		try {
 			TypedQuery<StockMarket> query = em.createQuery(
@@ -107,6 +113,7 @@ public class StockMarketFacade {
 	 *            id giełdy
 	 * @return
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	public StockMarket getStockMarketById(long stockMarketId) {
 		try {
 			StockMarket stockMarket = em.find(StockMarket.class, stockMarketId);
@@ -124,6 +131,7 @@ public class StockMarketFacade {
 	 *            skrócona nazwa
 	 * @return
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	public StockMarket getStockMarketByAbbreviatedName(String abberviatedName) {
 		try {
 			TypedQuery<StockMarket> query = em
@@ -150,11 +158,12 @@ public class StockMarketFacade {
 	 *            indeks giełdowy
 	 * @return
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	public boolean addStockIndex(long stockMarketId, StockIndex stockIndex) {
 		try {
 			TypedQuery<StockIndex> query = em
 					.createQuery(
-							"SELECT s FROM StockIndex s WHERE s.stockMarket.id = :stockMarketId ORDER BY d.dateOfAdd DESC",
+							"SELECT s FROM StockIndex s WHERE s.stockMarket.id = :stockMarketId ORDER BY s.dateOfAdd DESC",
 							StockIndex.class);
 			query.setParameter("stockMarketId", stockMarketId).setMaxResults(1);
 			List<StockIndex> list = query.getResultList();
@@ -189,6 +198,7 @@ public class StockMarketFacade {
 	 *            id indeksu giełdowego
 	 * @return
 	 */
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	public boolean deleteStockIndex(long stockIndexId) {
 		try {
 			StockIndex stockIndex = em.find(StockIndex.class, stockIndexId);

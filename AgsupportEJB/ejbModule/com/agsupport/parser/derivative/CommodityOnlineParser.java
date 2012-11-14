@@ -18,7 +18,7 @@ public class CommodityOnlineParser extends DerivativeParser {
 
 	@Override
 	protected void getAllValuesRows() {
-		// Tworzê nowy tag div, ¿eby wyodrêbniæ kolejny wiersz (strona zawiera w ca³ej tabelce zagnie¿dzone na jednym poziomie tagi li)
+		// Tworzï¿½ nowy tag div, ï¿½eby wyodrï¿½bniï¿½ kolejny wiersz (strona zawiera w caï¿½ej tabelce zagnieï¿½dzone na jednym poziomie tagi li)
 		
 		Element ul = getDocument().getElementsByClass("mcxlisting2").get(1).child(0);
 			
@@ -59,7 +59,7 @@ public class CommodityOnlineParser extends DerivativeParser {
 	}
 	
 	private Date parseDate(String date) throws ParseException {
-		SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH);
+		SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yy", Locale.ENGLISH);
 		
 		return sdf.parse(date);
 	}

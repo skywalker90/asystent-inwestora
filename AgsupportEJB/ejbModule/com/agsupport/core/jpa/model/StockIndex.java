@@ -5,6 +5,7 @@ import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -12,6 +13,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+
+import org.codehaus.jackson.annotate.JsonIgnore;
 
 /**
  * Klasa modelu reprezentująca indeks danej giełdy.
@@ -36,8 +39,9 @@ public class StockIndex implements Serializable {
 	@Column(name = "date_of_add", nullable = false)
 	private Date dateOfAdd;
 
-	@ManyToOne(optional = false)
+	@ManyToOne(optional = false, fetch = FetchType.LAZY)
 	@JoinColumn(name = "stock_market_id")
+	@JsonIgnore
 	private StockMarket stockMarket;
 
 	public StockIndex() {

@@ -5,6 +5,7 @@ import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -12,6 +13,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+
+import org.codehaus.jackson.annotate.JsonIgnore;
 
 /**
  * Klasa modelu reprezentująca wartość instrumentu pochodnego.
@@ -40,8 +43,9 @@ public class DerivativeValue implements Serializable {
 	@Column(name = "expired_date", nullable = false)
 	private Date expiredDate;
 
-	@ManyToOne(optional = false)
+	@ManyToOne(optional = false,fetch=FetchType.LAZY)
 	@JoinColumn(name = "derivative_id")
+	@JsonIgnore
 	private Derivative derivative;
 
 	public DerivativeValue() {

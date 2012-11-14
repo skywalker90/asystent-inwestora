@@ -16,6 +16,8 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
+
 /**
  * Klasa modelu reprezentująca instrument pochodny giełdy.
  * 
@@ -44,6 +46,7 @@ public class Derivative implements Serializable {
 	private Date dateOfAdd;
 
 	@OneToMany(mappedBy = "derivative", cascade = CascadeType.ALL)
+	@JsonIgnore
 	private List<DerivativeValue> derivativeValues = new LinkedList<DerivativeValue>();
 
 	public Derivative() {
