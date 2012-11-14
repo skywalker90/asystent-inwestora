@@ -18,7 +18,9 @@ import com.agsupport.core.jpa.facade.DerivativeValueFacade;
 import com.agsupport.core.jpa.model.Derivative;
 import com.agsupport.core.jpa.model.DerivativeValue;
 import com.agsupport.parser.derivative.DerivativeParser;
-import com.agsupport.parser.derivative.DerivativeParserForHistory;
+import com.agsupport.parser.factories.CommodityOnlineFactory;
+import com.agsupport.parser.factories.ForexprosFactory;
+import com.agsupport.parser.factories.WigDerivativeHistoryFactory;
 
 /**
  * Klasa odpowiedzialna za systematyczne pobieranie wartosci instrumentów
@@ -53,12 +55,20 @@ public class DerivativeValueCollector {
 	public void collect() {
 		logger.info("DerivativeValueCollector.collect START");
 		List<DerivativeParser> parserList = new LinkedList<DerivativeParser>();
-		parserList.add(new DerivativeParser());
-		parserList.add(new DerivativeParser());
+		
+		parserList.addAll(Arrays.asList(CommodityOnlineFactory.getParsers()));
+		parserList.addAll(Arrays.asList(ForexprosFactory.getParsers()));
+		/* tu wpisać datę */
+		parserList.addAll(WigDerivativeHistoryFactory.getParsers("20121102"));
+		
+		/*
+		 * UWAGA od doba: parsery nie mają wypełnionego pola Derivative
+		 * nie wiem, czy któraś z metod ma już to zaimplementowane
+		*/
 
 		for (DerivativeParser p : parserList) {
 
-			if (p instanceof DerivativeParserForHistory) {
+			if (p.getIsForHistory()) {
 
 				// TRZEBA UMÓWIĆ SIĘ NA JAKĄŚ NAZWĘ, np. WIG20
 				// Jeśli istnieje, to znaczy że historia również istnieje.

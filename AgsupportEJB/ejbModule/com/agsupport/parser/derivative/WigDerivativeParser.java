@@ -12,6 +12,7 @@ public class WigDerivativeParser extends DerivativeParser {
 	
 	public WigDerivativeParser() {
 		super("http://gielda.wp.pl/typ,kontraktyiji_kontrakty_indeksowe,notowania.html");
+		setIsForHistory(true);
 	}
 	
 	public WigDerivativeParser(String url, String date) throws ParseException {

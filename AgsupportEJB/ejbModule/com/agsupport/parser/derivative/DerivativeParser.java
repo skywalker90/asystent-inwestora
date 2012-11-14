@@ -19,6 +19,7 @@ public abstract class DerivativeParser {
 	
 	protected LinkedList<Element> indexes = new LinkedList<Element>();
 	protected String stockMarketName; 
+	protected Boolean isForHistory = false;
 	
 	public DerivativeParser(String url) {
 		this._url = url;
@@ -83,6 +84,14 @@ public abstract class DerivativeParser {
 		map.put(getStockMarketName(), _stockValuesList);
 		
 		return map;
+	}
+	
+	public Boolean getIsForHistory() {
+		return isForHistory;
+	}
+
+	public void setIsForHistory(Boolean isForHistory) {
+		this.isForHistory = isForHistory;
 	}
 	
 	protected abstract void getAllValuesRows();

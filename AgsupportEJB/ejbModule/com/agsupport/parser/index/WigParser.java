@@ -8,7 +8,6 @@ import com.agsupport.core.jpa.model.StockIndex;
 public class WigParser extends IndexParser {
 	public WigParser() {
 		super("http://gielda.wp.pl/indeksy.html");
-		setStockMarketName("WIG");
 	}
 	
 	/*public WigParser(String url) {
@@ -24,6 +23,7 @@ public class WigParser extends IndexParser {
 		for(Element tr : tbody.children()) {
 			if(counter > 1 && counter < 11 && tr.text().contains("WIG")){
 				this.indexes.add(tr);
+				this.stockMarketNames.add(tr.child(0).text().trim());
 			
 			}
 			

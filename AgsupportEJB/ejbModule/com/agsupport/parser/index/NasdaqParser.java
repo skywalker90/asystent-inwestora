@@ -9,7 +9,6 @@ import com.agsupport.core.jpa.model.StockIndex;
 public class NasdaqParser extends IndexParser {
 	public NasdaqParser() {
 		super("http://www.nasdaq.com/markets/indices/sector-indices.aspx");
-		setStockMarketName("NASDAQ");
 	}
 	
 	/*public NasdaqParser(String url) {
@@ -22,6 +21,7 @@ public class NasdaqParser extends IndexParser {
 		Element tbody = getDataContainerById("OtherIndicesTable").child(1);
 		for(Element tr : tbody.children()) {
 			this.indexes.add(tr);
+			this.stockMarketNames.add(tr.child(0).getElementsByTag("h3").first().text().trim());
 		}
 	}
 
@@ -36,8 +36,7 @@ public class NasdaqParser extends IndexParser {
 	}
 
 	private Double parsePrice(String str) {
-		str = str.replaceAll(" ", "");
-		str = str.replaceAll(",", ".");
+		str = str.replaceAll(",", "");
 		
 		return Double.parseDouble(str);
 	}

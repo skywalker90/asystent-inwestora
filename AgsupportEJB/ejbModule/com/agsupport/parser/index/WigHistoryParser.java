@@ -23,8 +23,8 @@ public class WigHistoryParser extends IndexParser {
 	
 	public WigHistoryParser(String url, String Date) throws ParseException {
 		super(url);
-		setStockMarketName("WIG");
 		this._createDate = new SimpleDateFormat("yyyyMMdd").parse(Date);
+		setIsForHistory(true);
 	}
 
 	@Override
@@ -33,6 +33,7 @@ public class WigHistoryParser extends IndexParser {
 		for(Element tr : tbody.children()) {
 			if(IndexNamesArray.contains(tr.getElementsByClass("name").text())) {
 				this.indexes.add(tr);
+				this.stockMarketNames.add(tr.child(0).text().trim());
 			}
 		}
 	}

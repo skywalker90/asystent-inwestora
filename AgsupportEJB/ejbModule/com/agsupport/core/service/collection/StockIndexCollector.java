@@ -18,7 +18,10 @@ import com.agsupport.core.jpa.facade.StockMarketFacade;
 import com.agsupport.core.jpa.model.StockIndex;
 import com.agsupport.core.jpa.model.StockMarket;
 import com.agsupport.parser.index.IndexParser;
-import com.agsupport.parser.index.IndexParserForHistory;
+import com.agsupport.parser.factories.WigHistoryFactory;
+import com.agsupport.parser.index.IndexParser;
+import com.agsupport.parser.index.NasdaqParser;
+import com.agsupport.parser.index.WigParser;
 
 /**
  * Klasa odpowiedzialna za systematyczne pobieranie wartosci indeksów dla
@@ -53,12 +56,21 @@ public class StockIndexCollector {
 	public void collect() {
 		logger.info("StockIndexCollector.collect START");
 		List<IndexParser> parserList = new LinkedList<IndexParser>();
-		parserList.add(new IndexParser());
-		parserList.add(new IndexParser());
+		
+		/* tu wpisać datę */
+		parserList.addAll(WigHistoryFactory.getParsers("20121102"));
+		
+		parserList.add(new NasdaqParser());
+		parserList.add(new WigParser());
 
+		/*
+		 * UWAGA od doba: parsery nie mają wypełnionego pola StockMarket
+		 * nie wiem, czy któraś z metod ma już to zaimplementowane
+		*/
+		
 		for (IndexParser p : parserList) {
 
-			if (p instanceof IndexParserForHistory) {
+			if (p.getIsForHistory()) {
 
 				// JEŚLI istnieje WIG20 to znaczy że historia już istnieje.
 				// TO ZNACZY ŻE HISTORIA JUŻ JEST ZACIĄGNIĘTA

@@ -7,7 +7,7 @@ import com.agsupport.parser.derivative.DerivativeParser;
 import com.agsupport.parser.derivative.WigDerivativeParser;
 
 public class WigDerivativeHistoryFactory extends HistoryFactory {
-	public static LinkedList<DerivativeParser> getParsers(String dataStart) throws ParseException{
+	public static LinkedList<DerivativeParser> getParsers(String dataStart) {
 		setPattern("yyyyMMdd");
 		LinkedList<DerivativeParser> parsers = new LinkedList<DerivativeParser>();
 
@@ -28,7 +28,12 @@ public class WigDerivativeHistoryFactory extends HistoryFactory {
 				dayBefore =  _getDayBefore(startDay);
 				
 				if(!_isWeekend(dayBefore))
-					parsers.add(new WigDerivativeParser(beforDateUrl + dayBefore +afterDateUrl, dayBefore));
+					try {
+						parsers.add(new WigDerivativeParser(beforDateUrl + dayBefore +afterDateUrl, dayBefore));
+					} catch (ParseException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				
 				startDay = dayBefore;
 			}

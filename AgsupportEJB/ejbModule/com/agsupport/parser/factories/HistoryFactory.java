@@ -7,14 +7,13 @@ import java.util.Calendar;
 import java.util.Date;
 
 public abstract class HistoryFactory {
-	
 	protected static String pattern;
 	
-	protected static void  setPattern(String _pattern){
+	protected static void  setPattern(String _pattern) {
 		pattern = _pattern;
 	} 
 	
-	protected static String _getYesterday(){
+	protected static String _getYesterday() {
 		Calendar cal = Calendar.getInstance();
 		
 		DateFormat dateFormat = new SimpleDateFormat(pattern);
@@ -23,7 +22,7 @@ public abstract class HistoryFactory {
 		return dateFormat.format(cal.getTime());
 	}
 	
-	protected static String _getToday(){
+	protected static String _getToday() {
 		Calendar cal = Calendar.getInstance();
 		
 		DateFormat dateFormat = new SimpleDateFormat(pattern);
@@ -31,8 +30,14 @@ public abstract class HistoryFactory {
 		return 	dateFormat.format(cal.getTime());
 	}
 	
-	protected static String _getDayBefore(String Date) throws ParseException{
-		Date date = new SimpleDateFormat(pattern).parse(Date);
+	protected static String _getDayBefore(String Date) {
+		Date date = null;
+		try {
+			date = new SimpleDateFormat(pattern).parse(Date);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		DateFormat dateFormat = new SimpleDateFormat(pattern);
 
 		Calendar cal = Calendar.getInstance();
@@ -42,8 +47,14 @@ public abstract class HistoryFactory {
 		return dateFormat.format(cal.getTime());
 	}
 	
-	protected static Boolean _isWeekend(String Date) throws ParseException{
-		Date date = new SimpleDateFormat(pattern).parse(Date);
+	protected static Boolean _isWeekend(String Date) {
+		Date date = null;
+		try {
+			date = new SimpleDateFormat(pattern).parse(Date);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		Calendar calc = Calendar.getInstance();
 		
 		calc.setTime(date);

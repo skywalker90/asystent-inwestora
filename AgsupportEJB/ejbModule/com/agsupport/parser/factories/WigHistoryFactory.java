@@ -9,7 +9,7 @@ import com.agsupport.parser.index.WigHistoryParser;
 
 public class WigHistoryFactory extends HistoryFactory{
 	
-	public static LinkedList<IndexParser> getParsers(String dataStart) throws ParseException{
+	public static LinkedList<IndexParser> getParsers(String dataStart) {
 		setPattern("yyyyMMdd");
 		LinkedList<IndexParser> parsers = new LinkedList<IndexParser>();
 
@@ -30,7 +30,12 @@ public class WigHistoryFactory extends HistoryFactory{
 				dayBefore =  _getDayBefore(startDay);
 				
 				if(!_isWeekend(dayBefore))
-					parsers.add(new WigHistoryParser(beforDateUrl + dayBefore +afterDateUrl, dayBefore));
+					try {
+						parsers.add(new WigHistoryParser(beforDateUrl + dayBefore +afterDateUrl, dayBefore));
+					} catch (ParseException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				
 				startDay = dayBefore;
 			}

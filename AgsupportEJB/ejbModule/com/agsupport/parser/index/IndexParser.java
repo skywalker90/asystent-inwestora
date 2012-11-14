@@ -16,10 +16,11 @@ public abstract class IndexParser {
 	private Document _document = null;
 	private String _url = null;
 	private LinkedList<StockIndex> _stockIndexesList = new LinkedList<StockIndex>();
-	private Map<String, StockIndex> _map = new HashMap<String, StockIndex>(); 
+	private Map<String, StockIndex> _map = new HashMap<String, StockIndex>();
+	protected Boolean isForHistory = false;
 	
 	protected LinkedList<Element> indexes = new LinkedList<Element>();
-	protected String stockMarketName; 
+	protected LinkedList<String> stockMarketNames = new LinkedList<String>(); 
 	
 	public IndexParser(String url) {
 		this._url = url;
@@ -65,25 +66,27 @@ public abstract class IndexParser {
 		}
 	}
 	
-	public String getStockMarketName() {
-		return stockMarketName;
-	}
-
-	public void setStockMarketName(String stockMarketName) {
-		this.stockMarketName = stockMarketName;
-	}
-	
 	public Map<String, StockIndex> getStockIndexList() {
 		/* don't blame me, it's all because of Radoslaw's ridiculous fantasy ;-) */
 		if(_stockIndexesList.isEmpty()) {
 			getResults();
 		}
 		
+		int i = 0;
 		for(StockIndex si : _stockIndexesList) {
-			_map.put(getStockMarketName(), si);
+			_map.put(stockMarketNames.get(i), si);
+			i++;
 		}
 		
 		return _map;
+	}
+	
+	public Boolean getIsForHistory() {
+		return isForHistory;
+	}
+
+	public void setIsForHistory(Boolean isForHistory) {
+		this.isForHistory = isForHistory;
 	}
 	
 	protected abstract void getAllIndexesRows();
