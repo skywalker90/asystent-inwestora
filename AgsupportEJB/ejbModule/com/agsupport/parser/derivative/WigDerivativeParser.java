@@ -3,22 +3,24 @@ package com.agsupport.parser.derivative;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
+
 import org.jsoup.nodes.Element;
 
 import com.agsupport.core.jpa.model.DerivativeValue;
 
 public class WigDerivativeParser extends DerivativeParser {
 	private Date _createDate;
+	private Date _dateOfAdd;
 	
-	public WigDerivativeParser() throws ParseException {
+	/*public WigDerivativeParser() {
 		super("http://gielda.wp.pl/typ,kontraktyiji_kontrakty_indeksowe,notowania.html");
-		this._createDate = new SimpleDateFormat("yyyyMMdd").parse(date);
 		setIsForHistory(true);
-	}
+	}*/
 	
 	public WigDerivativeParser(String url, String date) throws ParseException {
 		super(url);
-		this._createDate = new SimpleDateFormat("yyyyMMdd").parse(date);	
+		this._createDate = new SimpleDateFormat("yyyyMMdd").parse(date);
 	}
 	
 	private Date _parseExpireDate(String str) throws ParseException {
@@ -47,8 +49,21 @@ public class WigDerivativeParser extends DerivativeParser {
 		return sdf.parse(month + "." + year);
 	}
 	
+	private Date _parseDateOfAdd(String date) throws ParseException {
+		SimpleDateFormat sdf = new SimpleDateFormat("kk:mm dd.MM.yy");
+		
+		return sdf.parse(date);
+	}
+	
 	@Override
 	protected void getAllValuesRows() {
+		try {
+			_dateOfAdd = _parseDateOfAdd(getDocument().getElementsByClass("not_date2").first().text());
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		Element tbody = this.getDocument().getElementsByClass("tab_fld").first().getElementsByTag("tbody").first();
 		int counter = 0;
 		for(Element tr : tbody.children()) {
@@ -68,7 +83,7 @@ public class WigDerivativeParser extends DerivativeParser {
 		name = index.child(1).text();
 		
 		derIndex.setPrice(parsePrice(index.child(2).text()));
-		derIndex.setDateOfAdd(new Date());
+		derIndex.setDateOfAdd(_dateOfAdd);
 		
 		/* todo: na pewno o to chodzilo? */
 		switch(name.charAt(2)) {
