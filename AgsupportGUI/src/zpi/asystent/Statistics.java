@@ -145,22 +145,26 @@ public class Statistics {
 		Date mindate = DateUtilities.createDate(9999, 12, 31);
 		List<JSONStockIndex> ids = list.getStockIndexes();
 		List<JSONStockIndex> ids2 = new LinkedList<JSONStockIndex>();
-		JSONStockIndex temp = ids.get(0);
-		while(ids2.size() != ids.size())
+		
+		if(ids.size() > 0)
 		{
-			for(int i = 0; i < ids.size(); i++)
+			JSONStockIndex temp = ids.get(0);
+			while(ids2.size() != ids.size())
 			{
-				if(!ids2.contains(ids.get(i)))
+				for(int i = 0; i < ids.size(); i++)
 				{
-					if(ids.get(i).getDateOfAdd().before(mindate))
+					if(!ids2.contains(ids.get(i)))
 					{
-						temp = ids.get(i);
-						mindate = temp.getDateOfAdd();
+						if(ids.get(i).getDateOfAdd().before(mindate))
+						{
+							temp = ids.get(i);
+							mindate = temp.getDateOfAdd();
+						}
 					}
 				}
+				ids2.add(temp);
+				mindate = DateUtilities.createDate(9999, 12, 31);
 			}
-			ids2.add(temp);
-			mindate = DateUtilities.createDate(9999, 12, 31);
 		}
 		
 		return ids2;

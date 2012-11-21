@@ -101,14 +101,14 @@ public class MainFrame extends JFrame implements Observer {
 		JMenu mnNewMenu = new JMenu("Menu");
 		menuBar.add(mnNewMenu);
 		
-		JMenuItem mntmZakocz = new JMenuItem("Zako≈Ñcz");
+		JMenuItem mntmZakocz = new JMenuItem("ZakoÒcz");
 		mntmZakocz.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				dispose();
 			}
 		});
 		
-		JMenuItem mntmNewMenuItem = new JMenuItem("Pobierz gie≈Çdy");
+		JMenuItem mntmNewMenuItem = new JMenuItem("Pobierz gie≥dy");
 		mntmNewMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				controller.getStockMarketList();
@@ -625,6 +625,7 @@ public class MainFrame extends JFrame implements Observer {
 	
 	public void updateStockStatistics(ListOfStockIndex indexes)
 	{
+		if(indexes.getStockIndexes().size() < 1) return;
 		tempStockIndexes = indexes;
 		plot.clearRangeMarkers();
 		
@@ -670,15 +671,19 @@ public class MainFrame extends JFrame implements Observer {
 		List<JSONStockIndex> sortedlist = stat.sortStockIndexes(indexes);
 		
 		int numvals = sortedlist.size()/7;
+		
+		if(numvals < 1) return;
+		
 		int counter = 0;
 		double[] vals = new double[numvals];
 		int num = sortedlist.size();
+		
 		for(int i = 0; i < num; i++)
 		{
 			if(counter == numvals)
 			{
 				double vema = stat.EMA(vals);
-				series2.add(new Minute(sortedlist.get(i-1-numvals/2).getDateOfAdd()), vema);
+				series2.add(new Minute(sortedlist.get(Math.max(0, i-1-numvals/2)).getDateOfAdd()), vema);
 				counter = 0;
 				
 				if(num - i <= numvals )
