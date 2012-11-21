@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
@@ -35,11 +36,20 @@ import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.labels.StandardXYToolTipGenerator;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.ValueMarker;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.data.time.Minute;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
+import org.jfree.data.time.TimeSeriesDataItem;
+import org.jfree.data.xy.DefaultXYDataset;
+import org.jfree.data.xy.XYDataset;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
+import org.jfree.ui.RectangleAnchor;
+import org.jfree.ui.TextAnchor;
 
 import com.agsupport.core.service.communication.*;
 
@@ -50,13 +60,27 @@ import com.jgoodies.forms.layout.RowSpec;
 
 public class MainFrame extends JFrame implements Observer {
 
+	private final String lblSMAcap = "årednia krokowa prosta";
+	private final String lblWMAcap = "årednia krokowa waøona";
+	private final String lblEMAcap = "årednia krokowa wykladnicza";
+	
+	private ListOfStockIndex tempStockIndexes;
+	
 	private JPanel contentPane;
 	private JTextField fromField;
 	private JTextField toField;
 	final JList list;
 	static JFreeChart chart;
 	static XYPlot plot;
+	static JFreeChart trendchart;
+	static XYPlot trendplot;
 	JComboBox comboBox;
+	
+	
+	JLabel lblSMA;
+	JLabel lblWMA;
+	JLabel lblEMA;
+	
 	
 	final ControllerInterface controller;
 
@@ -103,6 +127,266 @@ public class MainFrame extends JFrame implements Observer {
 		mnNewMenu.add(mntmPobierzInstrPochodne);
 		mnNewMenu.add(mntmZakocz);
 		
+		JMenu mnNewMenu_widok = new JMenu("Wskaüniki");
+		
+		JMenuItem mntmRSI = new JMenuItem("RSI z 5 dni");
+		mntmRSI.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				
+				Statistics stat = new Statistics();
+				TimeSeries series1 = new TimeSeries("RSI", Minute.class);
+	
+				
+				List<JSONStockIndex> list = stat.sortStockIndexes(tempStockIndexes);
+				List<List<Double>> days = stat.groupByDay(list);
+				double[] vals = stat.extractCloseVals(days);
+				double[] rsi = stat.RSI(vals, 5);
+				
+
+				for(int i =0; i <  rsi.length; i++) {
+					Date tt = (Date)list.get(0).getDateOfAdd().clone();
+					tt.setTime(tt.getTime()+i*86400000);
+					series1.add(new Minute(tt), rsi[i]);
+
+				}
+				
+				trendplot.setDataset(new TimeSeriesCollection(series1));
+				
+
+				
+			}
+		});
+		
+		mnNewMenu_widok.add(mntmRSI);
+		
+		JMenuItem mntmCCI = new JMenuItem("CCI");
+		mntmCCI.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				
+				Statistics stat = new Statistics();
+				TimeSeries series1 = new TimeSeries("CCI", Minute.class);
+	
+				
+				List<JSONStockIndex> list = stat.sortStockIndexes(tempStockIndexes);
+				List<List<Double>> days = stat.groupByDay(list);
+				double[] vals = stat.extractCloseVals(days);
+				double[] mins = stat.extractMinVals(days);
+				double[] maxs = stat.extractMaxVals(days);
+				double[] cci = stat.CCI(maxs, mins, vals);
+				
+
+				for(int i =0; i <  cci.length; i++) {
+					Date tt = (Date)list.get(0).getDateOfAdd().clone();
+					tt.setTime(tt.getTime()+i*86400000);
+					series1.add(new Minute(tt), cci[i]);
+
+				}
+				
+				trendplot.setDataset(new TimeSeriesCollection(series1));
+				
+
+				
+			}
+		});
+		
+		mnNewMenu_widok.add(mntmCCI);
+		
+		JMenuItem mntmROC = new JMenuItem("ROC z 5 dni");
+		mntmROC.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				
+				Statistics stat = new Statistics();
+				TimeSeries series1 = new TimeSeries("ROC", Minute.class);
+	
+				
+				List<JSONStockIndex> list = stat.sortStockIndexes(tempStockIndexes);
+				List<List<Double>> days = stat.groupByDay(list);
+				double[] vals = stat.extractCloseVals(days);
+				
+				double[] roc = stat.ROC(vals,5);
+				
+
+				for(int i =0; i <  roc.length; i++) {
+					Date tt = (Date)list.get(0).getDateOfAdd().clone();
+					tt.setTime(tt.getTime()+i*86400000);
+					series1.add(new Minute(tt), roc[i]);
+
+				}
+				
+				trendplot.setDataset(new TimeSeriesCollection(series1));
+				
+
+				
+			}
+		});
+		
+		mnNewMenu_widok.add(mntmROC);
+		
+		JMenuItem mntmWilliams = new JMenuItem("Williams %R z 10 dni");
+		mntmWilliams.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				
+				Statistics stat = new Statistics();
+				TimeSeries series1 = new TimeSeries("Williams %R", Minute.class);
+	
+				
+				List<JSONStockIndex> list = stat.sortStockIndexes(tempStockIndexes);
+				List<List<Double>> days = stat.groupByDay(list);
+				double[] vals = stat.extractCloseVals(days);
+				
+				double[] will = stat.Williams(vals,10);
+				
+
+				for(int i =0; i <  will.length; i++) {
+					Date tt = (Date)list.get(0).getDateOfAdd().clone();
+					tt.setTime(tt.getTime()+i*86400000);
+					series1.add(new Minute(tt), will[i]);
+
+				}
+				
+				trendplot.setDataset(new TimeSeriesCollection(series1));
+				
+
+				
+			}
+		});
+		
+		mnNewMenu_widok.add(mntmWilliams);
+		
+		JMenuItem mntmWilliams5 = new JMenuItem("Williams %R z 5 dni");
+		mntmWilliams5.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				
+				Statistics stat = new Statistics();
+				TimeSeries series1 = new TimeSeries("Williams %R", Minute.class);
+	
+				
+				List<JSONStockIndex> list = stat.sortStockIndexes(tempStockIndexes);
+				List<List<Double>> days = stat.groupByDay(list);
+				double[] vals = stat.extractCloseVals(days);
+				
+				double[] will = stat.Williams(vals,5);
+				
+
+				for(int i =0; i <  will.length; i++) {
+					Date tt = (Date)list.get(0).getDateOfAdd().clone();
+					tt.setTime(tt.getTime()+i*86400000);
+					series1.add(new Minute(tt), will[i]);
+
+				}
+				
+				trendplot.setDataset(new TimeSeriesCollection(series1));
+				
+
+				
+			}
+		});
+		
+		mnNewMenu_widok.add(mntmWilliams5);
+		
+		JMenuItem mntmPivot = new JMenuItem("PivotPoint");
+		mntmPivot.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				
+				
+				
+				
+				Statistics stat = new Statistics();
+				TimeSeries series1 = new TimeSeries("Pivot", Minute.class);
+				TimeSeries series2 = new TimeSeries("R1", Minute.class);
+				TimeSeries series3 = new TimeSeries("S1", Minute.class);
+				TimeSeries series4 = new TimeSeries("Cena", Minute.class);
+				
+				for(JSONStockIndex si : tempStockIndexes.getStockIndexes() ) {
+					series4.add(new Minute(si.getDateOfAdd()), si.getPrice());
+					
+				}
+	
+				
+				List<JSONStockIndex> list = stat.sortStockIndexes(tempStockIndexes);
+				List<List<Double>> days = stat.groupByDay(list);
+				double[] vals = stat.extractCloseVals(days);
+				double[] mins = stat.extractMinVals(days);
+				double[] maxs = stat.extractMaxVals(days);
+				
+				PivotResult[] pivot = stat.PivotPoint(maxs, mins, vals);
+				
+
+				for(int i =0; i <  pivot.length; i++) {
+					Date tt = (Date)list.get(0).getDateOfAdd().clone();
+					tt.setTime(tt.getTime()+i*86400000+43200000);
+					series1.add(new Minute(tt), pivot[i].getPivot());
+
+				}
+				
+				for(int i =0; i <  pivot.length; i++) {
+					Date tt = (Date)list.get(0).getDateOfAdd().clone();
+					tt.setTime(tt.getTime()+i*86400000+43200000);
+					series2.add(new Minute(tt), pivot[i].getR1());
+
+				}
+				
+				for(int i =0; i <  pivot.length; i++) {
+					Date tt = (Date)list.get(0).getDateOfAdd().clone();
+					tt.setTime(tt.getTime()+i*86400000+43200000);
+					series3.add(new Minute(tt), pivot[i].getS1());
+
+				}
+				
+				TimeSeriesCollection tsc = new TimeSeriesCollection(series4);
+				tsc.addSeries(series1);
+				tsc.addSeries(series2);
+				tsc.addSeries(series3);
+				
+				trendplot.setDataset(tsc);
+				
+
+				
+			}
+		});
+		
+		mnNewMenu_widok.add(mntmPivot);
+		
+		JMenuItem mntmATR = new JMenuItem("ATR");
+		mntmATR.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				
+				
+				Statistics stat = new Statistics();
+				TimeSeries series1 = new TimeSeries("ATR", Minute.class);
+
+				
+				List<JSONStockIndex> list = stat.sortStockIndexes(tempStockIndexes);
+				List<List<Double>> days = stat.groupByDay(list);
+				double[] vals = stat.extractCloseVals(days);
+				double[] mins = stat.extractMinVals(days);
+				double[] maxs = stat.extractMaxVals(days);
+				
+				double[] atr = stat.ATR(maxs, mins, vals);
+				
+
+				for(int i =0; i <  atr.length; i++) {
+					Date tt = (Date)list.get(0).getDateOfAdd().clone();
+					tt.setTime(tt.getTime()+i*86400000);
+					series1.add(new Minute(tt), atr[i]);
+
+				}
+				
+				
+				
+				TimeSeriesCollection tsc = new TimeSeriesCollection(series1);
+				
+				trendplot.setDataset(tsc);
+				
+
+				
+			}
+		});
+		
+		mnNewMenu_widok.add(mntmATR);
+		
+		menuBar.add(mnNewMenu_widok);
+		
 		JMenu mnNewMenu_1 = new JMenu("Pomoc");
 		menuBar.add(mnNewMenu_1);
 		
@@ -144,8 +428,18 @@ public class MainFrame extends JFrame implements Observer {
 		JPanel factorsPanel = new JPanel();
 		centerPanel.add(factorsPanel, BorderLayout.SOUTH);
 		
-		JLabel lblNewLabel_2 = new JLabel("TUTAJ STATYSTYKA!!!");
-		factorsPanel.add(lblNewLabel_2);
+		
+		lblSMA = new JLabel(lblSMAcap + "0");
+		factorsPanel.add(lblSMA);
+		
+		lblWMA = new JLabel(lblWMAcap + "0");
+		factorsPanel.add(lblWMA);
+		
+		lblEMA = new JLabel(lblEMAcap + "0");
+		factorsPanel.add(lblEMA);
+		
+		
+		
 		
 		JPanel rangePanel = new JPanel();
 		centerPanel.add(rangePanel, BorderLayout.NORTH);
@@ -247,7 +541,40 @@ public class MainFrame extends JFrame implements Observer {
 		chart.setBackgroundPaint(new java.awt.Color(238, 238, 238));
         ChartPanel panel = new ChartPanel(chart, true, true, true, false, true);
         centerPanel.add(panel);
+        
+        
+        JFreeChart pchart = ChartFactory.createTimeSeriesChart(   
+                "",    
+                "Okres",    
+                "Wartosc",   
+                null,    
+                true,   
+                true,   
+                false   
+            );   
+		chart.setBackgroundPaint(new java.awt.Color(238, 238, 238));
+        ChartPanel ppanel = new ChartPanel(pchart, true, true, true, false, true);
+        ppanel.setPreferredSize(new Dimension(200,200));
+        centerPanel.add(ppanel,BorderLayout.SOUTH);
+        
+
+        trendchart = pchart;
+        trendplot = pchart.getXYPlot();
+        
+        NumberAxis rangeAxis1 = (NumberAxis) trendplot.getRangeAxis();   
+        rangeAxis1.setLowerMargin(0.40);  // to leave room for volume bars   
+        DecimalFormat fformat = new DecimalFormat("00.00");   
+        rangeAxis1.setNumberFormatOverride(fformat);   
+   
+        XYItemRenderer renderer1 = trendplot.getRenderer();   
+        renderer1.setToolTipGenerator(   
+            new StandardXYToolTipGenerator(   
+                StandardXYToolTipGenerator.DEFAULT_TOOL_TIP_FORMAT,   
+                new SimpleDateFormat("d-MMM-yyyy"), new DecimalFormat("0.00")   
+            )   
+        );   
 	}
+	
 	
 	private static JFreeChart createChart(String name) {   
 	       
@@ -295,18 +622,105 @@ public class MainFrame extends JFrame implements Observer {
 		});
 
 	}
+	
+	public void updateStockStatistics(ListOfStockIndex indexes)
+	{
+		tempStockIndexes = indexes;
+		plot.clearRangeMarkers();
+		
+		Statistics stat = new Statistics();
+		
+		double[] values = stat.plainValuesFromStockIndexes(indexes);
+		
+		Double vSMA = stat.SMA(values);
+		DecimalFormat df = new DecimalFormat("#.###");
+		lblSMA.setText(lblSMAcap + df.format(vSMA));	
+		
+		ValueMarker marker = new ValueMarker(vSMA);
+		marker.setPaint(Color.orange);
+		marker.setLabel(lblSMAcap);
+		marker.setLabelAnchor(RectangleAnchor.BOTTOM_RIGHT);
+		marker.setLabelTextAnchor(TextAnchor.TOP_RIGHT);
+		plot.addRangeMarker(marker);
+		
+		Double vWMA = stat.WMA(values);
+		lblWMA.setText(lblWMAcap + df.format(vWMA));	
+		
+		marker = new ValueMarker(vWMA);
+		marker.setPaint(Color.green);
+		marker.setLabel(lblWMAcap);
+		marker.setLabelAnchor(RectangleAnchor.BOTTOM_RIGHT);
+		marker.setLabelTextAnchor(TextAnchor.TOP_RIGHT);
+		plot.addRangeMarker(marker);
+		
+		Double vEMA = stat.EMA(values);
+		lblEMA.setText(lblEMAcap + df.format(vEMA));
+		
+		marker = new ValueMarker(vEMA);
+		marker.setPaint(Color.blue);
+		marker.setLabel(lblEMAcap);
+		marker.setLabelAnchor(RectangleAnchor.BOTTOM_RIGHT);
+		marker.setLabelTextAnchor(TextAnchor.TOP_RIGHT);
+		plot.addRangeMarker(marker);
+		
+		TimeSeriesCollection tsc = (TimeSeriesCollection)plot.getDataset();
+		
+		TimeSeries series2 = new TimeSeries("Trend", Minute.class);
+		
+		List<JSONStockIndex> sortedlist = stat.sortStockIndexes(indexes);
+		
+		int numvals = sortedlist.size()/7;
+		int counter = 0;
+		double[] vals = new double[numvals];
+		int num = sortedlist.size();
+		for(int i = 0; i < num; i++)
+		{
+			if(counter == numvals)
+			{
+				double vema = stat.EMA(vals);
+				series2.add(new Minute(sortedlist.get(i-1-numvals/2).getDateOfAdd()), vema);
+				counter = 0;
+				
+				if(num - i <= numvals )
+				{
+					vals = new double[num - i ];
+					for(int a = 0; a < num - i ; a++)
+					{
+						vals[a] = sortedlist.get(i+a).getPrice();
+					}
+					
+					vema = stat.EMA(vals);
+					series2.add(new Minute(sortedlist.get(sortedlist.size()-1).getDateOfAdd()), vema);
+					counter = 0;
+					break;
+				}
+			}
+			
+			
+			vals[counter] = sortedlist.get(i).getPrice();
+			counter++;
+		}
+		
+		tsc.addSeries(series2);
+		
+	}
 
 	@Override
 	public void updateStockIndexes(ListOfStockIndex indexes) {
+		
+		
 		chart.setTitle(list.getSelectedValue().toString());
 			
 		TimeSeries series1 = new TimeSeries("Cena", Minute.class);
-		
+
 		for(JSONStockIndex si : indexes.getStockIndexes() ) {
 			series1.add(new Minute(si.getDateOfAdd()), si.getPrice());
+			
 		}
 		
 		plot.setDataset(new TimeSeriesCollection(series1));
+		
+		updateStockStatistics(indexes);
 	}
 
 	@Override
@@ -343,6 +757,8 @@ public class MainFrame extends JFrame implements Observer {
 		}
 		
 		plot.setDataset(new TimeSeriesCollection(series1));
+		
+		updateStockStatistics(Statistics.fromDerivativeValue(derivativeValues));
 		
 	}
 }
