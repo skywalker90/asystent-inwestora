@@ -161,11 +161,11 @@ public class HelloWorldResource {
 
 	@GET
 	@Produces("application/json")
-	@Path("getAllStockIndex")
-	public ListOfStockIndex getAllStockIndex(
+	@Path("getStockIndexForRange")
+	public ListOfStockIndex getStockIndexForRange(
 			@QueryParam("stockMarketId") long stockMarketId,
 			@QueryParam("from") long from, @QueryParam("to") long to) {
-		logger.info("HelloWorldResource.getAllStockIndex - invoked");
+		logger.info("HelloWorldResource.getStockIndexForRange - invoked");
 		JSONMapper jsonMapper = new JSONMapper();
 		return jsonMapper.mapJSONStockIndexList(stockIndexFacade
 				.getStockIndexForRange(stockMarketId, new Date(from), new Date(

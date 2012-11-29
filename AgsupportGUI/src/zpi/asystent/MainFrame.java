@@ -60,9 +60,9 @@ import com.jgoodies.forms.layout.RowSpec;
 
 public class MainFrame extends JFrame implements Observer {
 
-	private final String lblSMAcap = "årednia krokowa prosta";
-	private final String lblWMAcap = "årednia krokowa waøona";
-	private final String lblEMAcap = "årednia krokowa wykladnicza";
+	private final String lblSMAcap = "≈örednia krokowa prosta";
+	private final String lblWMAcap = "≈örednia krokowa wa≈ºona";
+	private final String lblEMAcap = "≈örednia krokowa wykladnicza";
 	
 	private ListOfStockIndex tempStockIndexes;
 	
@@ -101,14 +101,14 @@ public class MainFrame extends JFrame implements Observer {
 		JMenu mnNewMenu = new JMenu("Menu");
 		menuBar.add(mnNewMenu);
 		
-		JMenuItem mntmZakocz = new JMenuItem("ZakoÒcz");
+		JMenuItem mntmZakocz = new JMenuItem("Zako≈Ñcz");
 		mntmZakocz.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				dispose();
 			}
 		});
 		
-		JMenuItem mntmNewMenuItem = new JMenuItem("Pobierz gie≥dy");
+		JMenuItem mntmNewMenuItem = new JMenuItem("Pobierz gie≈Çdy");
 		mntmNewMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				controller.getStockMarketList();
@@ -127,7 +127,7 @@ public class MainFrame extends JFrame implements Observer {
 		mnNewMenu.add(mntmPobierzInstrPochodne);
 		mnNewMenu.add(mntmZakocz);
 		
-		JMenu mnNewMenu_widok = new JMenu("Wskaüniki");
+		JMenu mnNewMenu_widok = new JMenu("Wska≈∫niki");
 		
 		JMenuItem mntmRSI = new JMenuItem("RSI z 5 dni");
 		mntmRSI.addActionListener(new ActionListener() {

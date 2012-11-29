@@ -93,7 +93,7 @@ public class DerivativeValueCollector {
 	 * pochodnych
 	 * 
 	 */
-	@Schedule(persistent = false, second = "0", minute = "*/10", hour = "*")
+	@Schedule(persistent = false, second = "0", minute = "*/20", hour = "*")
 	public void collect() {
 
 		logger.info("DerivativeValueCollector.collect START");
@@ -103,6 +103,7 @@ public class DerivativeValueCollector {
 		parserList.addAll(Arrays.asList(CommodityOnlineFactory.getParsers()));
 		parserList.addAll(Arrays.asList(ForexprosFactory.getParsers()));
 		parserList.add(new WigDerivativeParser());
+		
 
 		/*
 		 * UWAGA od doba: parsery nie mają wypełnionego pola Derivative nie

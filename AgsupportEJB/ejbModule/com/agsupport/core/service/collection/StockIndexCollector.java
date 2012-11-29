@@ -1,5 +1,6 @@
 package com.agsupport.core.service.collection;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -17,7 +18,6 @@ import com.agsupport.core.jpa.facade.StockIndexFacade;
 import com.agsupport.core.jpa.facade.StockMarketFacade;
 import com.agsupport.core.jpa.model.StockIndex;
 import com.agsupport.core.jpa.model.StockMarket;
-import com.agsupport.parser.index.IndexParser;
 import com.agsupport.parser.factories.WigHistoryFactory;
 import com.agsupport.parser.index.IndexParser;
 import com.agsupport.parser.index.NasdaqParser;
@@ -83,15 +83,17 @@ public class StockIndexCollector {
 	 * wartości indeksów.
 	 * 
 	 */
-	@Schedule(persistent = false, second = "0", minute = "*/10", hour = "*")
+	@Schedule(persistent = false, second = "0", minute = "*/20", hour = "*")
 	public void collect() {
 		logger.info("StockIndexCollector.collect START");
 		List<IndexParser> parserList = new LinkedList<IndexParser>();
 
 		/* tu wpisać datę */
-
+		
+		
 		parserList.add(new NasdaqParser());
 		parserList.add(new WigParser());
+		parserList.addAll(Arrays.asList(com.agsupport.parser.factories.ForexprosIndexFactory.getParsers()));
 
 		/*
 		 * UWAGA od doba: parsery nie mają wypełnionego pola StockMarket nie

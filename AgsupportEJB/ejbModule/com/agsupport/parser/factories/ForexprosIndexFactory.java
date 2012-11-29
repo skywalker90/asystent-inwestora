@@ -3,6 +3,7 @@ package com.agsupport.parser.factories;
 import com.agsupport.parser.index.ForexprosIndexParser;
 
 public class ForexprosIndexFactory {
+	
 	private static ForexprosIndexParser[] parsers = new ForexprosIndexParser[] {
 		/* Europe */
 		new ForexprosIndexParser("http://www.forexpros.com/markets/denmark"),
@@ -37,4 +38,5 @@ public class ForexprosIndexFactory {
 	public static ForexprosIndexParser[] getParsers() {
 		return parsers; 
 	}
+	
 }

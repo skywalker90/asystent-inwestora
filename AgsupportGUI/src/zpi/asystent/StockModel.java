@@ -62,7 +62,7 @@ public class StockModel {
 	
 	public void getStockIndexList(JSONStockMarket market, Date from, Date to) {
 		
-		ListOfStockIndex resp1 = wr1.path("getAllStockIndex").queryParam("stockMarketId", market.getId().toString())
+		ListOfStockIndex resp1 = wr1.path("getStockIndexForRange").queryParam("stockMarketId", market.getId().toString())
 				.queryParam("from", new Long(from.getTime()).toString() )
 				.queryParam("to", new Long(to.getTime()).toString() )
 				.accept("application/json").get(ListOfStockIndex.class);

@@ -1,38 +1,33 @@
 package com.agsupport.parser.derivative;
-
+ 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
-
+ 
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Tag;
-
+import org.jsoup.select.Elements;
+ 
 import com.agsupport.core.jpa.model.DerivativeValue;
-
+ 
 public class CommodityOnlineParser extends DerivativeParser {
 	public CommodityOnlineParser(String url, String name) {
 		super(url);
 		setStockMarketName(name);
 	}
-
+ 
 	@Override
-	protected void getAllValuesRows() {
-		// Tworz� nowy tag div, �eby wyodr�bni� kolejny wiersz (strona zawiera w ca�ej tabelce zagnie�dzone na jednym poziomie tagi li)
-		
-		Element ul = getDocument().getElementsByClass("mcxlisting2").get(1).child(0);
+	protected void getAllValuesRows() {	
+		Elements divs = getDocument().getElementById("container_fix").child(2).getElementsByClass("st_yellow");
 			
-		for(int i = 0; i < ul.children().size(); i += 4) {
-			Element div = new Element(Tag.valueOf("div"), "");
-			String expiryDate = ul.child(i).text();
+		for(Element div : divs) {
+			String expiryDate = div.child(0).child(0).text();
+			
 			Boolean unique = true;
 			
-			div.appendChild(ul.child(i).clone());
-			div.appendChild(ul.child(i + 1).clone());
-			
 			for(Element index : indexes){
-				if(index.child(0).text().equals(expiryDate)) {
-					System.out.println("Yes");
+				if(index.child(0).child(0).text().equals(expiryDate)) {
 					unique = false;
 				}
 			}
@@ -41,19 +36,19 @@ public class CommodityOnlineParser extends DerivativeParser {
 				indexes.add(div);
 		}
 	}
-
+ 
 	@Override
 	protected DerivativeValue getValue(Element index) {
 		DerivativeValue derValue = new DerivativeValue();
 		
 		derValue.setDateOfAdd(new Date());
 		try {
-			derValue.setExpiredDate(parseDate(index.child(0).text()));
+			derValue.setExpiredDate(parseDate(index.child(0).child(0).text()));
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		derValue.setPrice(parsePrice(index.child(1).text()));
+		derValue.setPrice(parsePrice(index.child(0).child(1).text()));
 		
 		return derValue;
 	}
